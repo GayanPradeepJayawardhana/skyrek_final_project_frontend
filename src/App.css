@@ -1,0 +1,10 @@
+/* bg-green-600 text-white px-4 py-2 w-[100px] text-center rounded-lg cursor-pointer */
+.save-btn{
+    background-color: green;
+    color: white;
+    padding: 0.5rem 1rem;
+    width: 100px;
+    text-align: center;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
