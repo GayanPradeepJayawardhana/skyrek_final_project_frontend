@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../. ./utils/api";
+import api from "../../utils/api";
 import LoadingScreen from "../../components/loadingScreen";
 import getFormattedPrice from "../../utils/price-formatter";
 import formatTimestamp from "../../utils/date-formatter";

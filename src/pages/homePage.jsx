@@ -8,33 +8,32 @@ import MyOrders from "./myOrders";
 import Settings from "./settings";
 import LandingPage from "./landingComponent";
 import ContactUsPage from "./contactUs";
+import WishlistPage from "./wishlistPage";
 
 export default function HomePage() {
-	return (
-		<div className="w-full h-full bg-primary text-secondary">
-			<Header />
-			<div className="h-[calc(100%-100px)] w-full ">
+    return (
+        <div className="w-full h-full bg-primary text-secondary">
+            <Header />
+            <div className="h-[calc(100%-100px)] w-full">
                 <Routes>
-                    <Route path="/" element={<LandingPage/>} />
-                    {/* products */}
+                    <Route path="/" element={<LandingPage />} />
                     <Route path="/products" element={<ProductsPage />} />
-                    {/* contact-us */}
                     <Route path="/contact-us" element={<ContactUsPage />} />
-                    {/* about-us */}
                     <Route path="/about-us" element={<h1>About Us Page</h1>} />
-                    {/* product-overview */}
-                    <Route path="/overview/:productId" element={<ProductOverview />} />
+                    <Route
+                        path="/overview/:productId"
+                        element={<ProductOverview />}
+                    />
 
                     <Route path="/cart" element={<CartPage />} />
-
                     <Route path="/checkout" element={<CheckoutPage />} />
-
-                    <Route path="/my-orders" element={<MyOrders/>} />
-                    <Route path="/settings" element={<Settings/>} />
+                    <Route path="/my-orders" element={<MyOrders />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/settings" element={<Settings />} />
 
                     <Route path="/*" element={<h1>404 Not Found</h1>} />
                 </Routes>
-			</div>
-		</div>
-	);
+            </div>
+        </div>
+    );
 }

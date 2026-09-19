@@ -1,9 +1,17 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import getFormattedPrice from "../utils/price-formatter";
 import StarRating from "./StarRating";
-import { FiShoppingBag } from "react-icons/fi";
+import { FiShoppingBag, FiHeart } from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { toggleWishlist, getWishlist } from "../utils/wishlist";
 
 export default function ProductCard({ product }) {
+    const navigate = useNavigate();
+    const [isWishlisted, setIsWishlisted] = useState(false);
+    const [checkingWishlist, setCheckingWishlist] = useState(false);
+
     const hasDiscount = product.price < product.labelledPrice;
     const discountPercent = hasDiscount
         ? Math.round(
@@ -18,6 +26,48 @@ export default function ProductCard({ product }) {
         product.images && product.images.length > 0
             ? product.images[0]
             : "/default-product-1.png";
+
+    // Load wishlist status on mount
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        getWishlist()
+            .then((data) => {
+                setIsWishlisted(
+                    data.productIds?.includes(product.productId) || false
+                );
+            })
+            .catch(() => {});
+    }, [product.productId]);
+
+    async function handleWishlistClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+            toast.error("Please login to add to wishlist");
+            navigate("/signin");
+            return;
+        }
+
+        if (checkingWishlist) return;
+        setCheckingWishlist(true);
+
+        try {
+            const res = await toggleWishlist(product.productId);
+            setIsWishlisted(res.isWishlisted);
+            toast.success(res.message);
+        } catch (err) {
+            toast.error(
+                err?.response?.data?.message ||
+                    "Failed to update wishlist"
+            );
+        } finally {
+            setCheckingWishlist(false);
+        }
+    }
 
     return (
         <Link
@@ -41,8 +91,30 @@ export default function ProductCard({ product }) {
                     </span>
                 )}
 
-                {product.brand && (
-                    <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 backdrop-blur-sm text-gray-700 text-[10px] font-semibold uppercase tracking-wide rounded-full shadow-sm">
+                {/* Wishlist heart */}
+                <button
+                    onClick={handleWishlistClick}
+                    disabled={checkingWishlist}
+                    className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all ${
+                        isWishlisted
+                            ? "bg-red-500 text-white hover:bg-red-600"
+                            : "bg-white/95 backdrop-blur-sm text-gray-500 hover:text-red-500 hover:bg-white"
+                    } disabled:opacity-60`}
+                    title={
+                        isWishlisted
+                            ? "Remove from wishlist"
+                            : "Add to wishlist"
+                    }
+                >
+                    {isWishlisted ? (
+                        <FaHeart size={14} />
+                    ) : (
+                        <FiHeart size={16} />
+                    )}
+                </button>
+
+                {product.brand && !hasDiscount && (
+                    <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 backdrop-blur-sm text-gray-700 text-[10px] font-semibold uppercase tracking-wide rounded-full shadow-sm">
                         {product.brand}
                     </span>
                 )}
