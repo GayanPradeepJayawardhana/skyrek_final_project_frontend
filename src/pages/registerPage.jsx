@@ -171,7 +171,7 @@ export default function RegisterPage() {
                         <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center overflow-hidden p-1.5">
                             <img
                                 src="/logo.png"
-                                alt="iComputers Logo"
+                                alt="PCFORGE Logo"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
                                     e.target.style.display = "none";
@@ -179,7 +179,7 @@ export default function RegisterPage() {
                             />
                         </div>
                         <span className="text-white font-bold text-xl">
-                            iComputers
+                            PCFORGE
                         </span>
                     </Link>
 
@@ -272,7 +272,7 @@ export default function RegisterPage() {
                     <div className="flex items-center gap-3 text-white/40 text-xs">
                         <HiOutlineCpuChip size={16} />
                         <span>
-                            © {new Date().getFullYear()} iComputers. All rights
+                            © {new Date().getFullYear()} PCFORGE. All rights
                             reserved.
                         </span>
                     </div>
@@ -294,7 +294,7 @@ export default function RegisterPage() {
                         <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center overflow-hidden p-1.5">
                             <img
                                 src="/logo.png"
-                                alt="iComputers Logo"
+                                alt="PCFORGE Logo"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
                                     e.target.style.display = "none";
@@ -302,7 +302,7 @@ export default function RegisterPage() {
                             />
                         </div>
                         <span className="text-white font-bold text-lg">
-                            iComputers
+                            PCFORGE
                         </span>
                     </Link>
                 </div>
@@ -586,7 +586,7 @@ export default function RegisterPage() {
 
                         {/* Mobile footer */}
                         <p className="lg:hidden text-center text-xs text-white/40 mt-6">
-                            © {new Date().getFullYear()} iComputers. All rights
+                            © {new Date().getFullYear()} PCFORGE. All rights
                             reserved.
                         </p>
                     </div>

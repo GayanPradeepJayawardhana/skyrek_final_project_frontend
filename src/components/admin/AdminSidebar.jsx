@@ -61,7 +61,7 @@ export default function AdminSidebar({ user, onLogout }) {
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#0a0f3d] flex items-center justify-center shadow-lg shadow-accent/20 overflow-hidden p-1.5">
                             <img
                                 src="/logo.png"
-                                alt="iComputers Logo"
+                                alt="PCFORGE Logo"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
                                     e.target.style.display = "none";
@@ -70,7 +70,7 @@ export default function AdminSidebar({ user, onLogout }) {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-gray-800 leading-tight">
-                                iComputers
+                                PCFORGE
                             </span>
                             <span className="text-xs text-gray-400">
                                 Admin Panel
@@ -81,7 +81,7 @@ export default function AdminSidebar({ user, onLogout }) {
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#0a0f3d] flex items-center justify-center mx-auto shadow-lg shadow-accent/20 overflow-hidden p-1.5">
                         <img
                             src="/logo.png"
-                            alt="iComputers Logo"
+                            alt="PCFORGE Logo"
                             className="w-full h-full object-contain"
                             onError={(e) => {
                                 e.target.style.display = "none";

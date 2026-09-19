@@ -549,7 +549,7 @@ function ReviewItem({ review, isMine }) {
                                     <FiCornerUpLeft size={12} />
                                 </div>
                                 <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">
-                                    iComputers Team
+                                    PCFORGE Team
                                 </span>
                                 {review.adminReply.repliedAt && (
                                     <span className="text-[11px] text-gray-400">

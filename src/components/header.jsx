@@ -32,7 +32,7 @@ export default function Header() {
                     <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-all overflow-hidden p-1.5">
                         <img
                             src="/logo.png"
-                            alt="iComputers Logo"
+                            alt="PCFORGE Logo"
                             className="w-full h-full object-contain"
                             onError={(e) => {
                                 e.target.style.display = "none";
@@ -40,7 +40,7 @@ export default function Header() {
                         />
                     </div>
                     <span className="hidden lg:block text-white font-bold text-xl tracking-tight">
-                        iComputers
+                        PCFORGE
                     </span>
                 </Link>
 

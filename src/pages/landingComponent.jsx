@@ -520,11 +520,18 @@ export default function LandingPage() {
                         {/* Brand */}
                         <div>
                             <div className="flex items-center gap-3 mb-5">
-                                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center font-bold text-lg">
-                                    iC
+                                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center overflow-hidden p-1.5">
+                                    <img
+                                        src="/logo.png"
+                                        alt="PCFORGE Logo"
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.target.style.display = "none";
+                                        }}
+                                    />
                                 </div>
                                 <span className="text-lg font-bold">
-                                    iComputers
+                                    PCFORGE
                                 </span>
                             </div>
                             <p className="text-sm text-white/60 leading-relaxed mb-5">
@@ -602,7 +609,7 @@ export default function LandingPage() {
                             <ul className="space-y-3 text-sm text-white/60">
                                 <li>Colombo, Sri Lanka</li>
                                 <li>+94 11 234 5678</li>
-                                <li>hello@icomputers.lk</li>
+                                <li>hello@pcforge.lk</li>
                                 <li>Mon - Sat: 9AM - 7PM</li>
                             </ul>
                         </div>
@@ -610,7 +617,7 @@ export default function LandingPage() {
 
                     <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <p className="text-xs text-white/40">
-                            © {new Date().getFullYear()} iComputers. All rights
+                            © {new Date().getFullYear()} PCFORGE. All rights
                             reserved.
                         </p>
                         <div className="flex gap-6 text-xs text-white/40">

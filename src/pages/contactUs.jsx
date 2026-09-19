@@ -85,7 +85,7 @@ export default function ContactUsPage() {
         {
             icon: FiMail,
             title: "Email Us",
-            lines: ["hello@icomputers.lk", "support@icomputers.lk"],
+            lines: ["hello@pcforge.lk", "support@pcforge.lk"],
             bg: "bg-violet-50",
             text: "text-violet-600",
         },

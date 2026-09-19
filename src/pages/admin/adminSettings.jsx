@@ -277,7 +277,7 @@ export default function AdminSettings() {
                             Store Name
                         </label>
                         <div className="text-sm font-semibold text-gray-800">
-                            iComputers
+                            PCFORGE
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">

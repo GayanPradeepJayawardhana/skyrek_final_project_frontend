@@ -202,7 +202,7 @@ export default function FeedbackSection() {
                     </h2>
                     <p className="text-gray-500 max-w-2xl mx-auto">
                         Real feedback from real shoppers. We read every
-                        message — your voice shapes iComputers.
+                        message — your voice shapes PCFORGE.
                     </p>
                 </div>
 
@@ -496,7 +496,7 @@ export default function FeedbackSection() {
                         </h3>
                         <p className="text-sm text-gray-500 max-w-sm">
                             Be the first to share your experience with
-                            iComputers.
+                            PCFORGE.
                         </p>
                     </div>
                 )}
@@ -620,7 +620,7 @@ function FeedbackCard({ feedback, isMine }) {
                             <FiCornerUpLeft size={12} />
                         </div>
                         <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">
-                            iComputers Team
+                            PCFORGE Team
                         </span>
                     </div>
                     <p className="text-sm text-emerald-900 leading-relaxed whitespace-pre-wrap">
