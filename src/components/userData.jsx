@@ -28,10 +28,31 @@ export default function UserData() {
         }
     }, []);
 
+    function handleSelectChange(e) {
+        const value = e.target.value;
+        setSelectedOption(value);
+
+        if (value === "settings") {
+            navigate("/settings");
+        }
+        if (value === "my-orders") {
+            navigate("/my-orders");
+        }
+        if (value === "logout") {
+            localStorage.removeItem("token");
+            localStorage.removeItem("cart");
+            sessionStorage.removeItem("checkoutCart");
+            setUser(null);
+            navigate("/");
+        }
+
+        setSelectedOption("me");
+    }
+
     return (
         <>
             {user == null ? (
-                <div className="lg:flex ">
+                <div className="lg:flex">
                     <Link
                         to="/signin"
                         className="text-white hidden lg:block hover:text-gray-500"
@@ -59,27 +80,14 @@ export default function UserData() {
                         src={user.image}
                         className="w-6 h-6 rounded-full inline-block mr-2"
                         alt="Profile"
+                        onError={(e) => {
+                            e.target.src = "/default-profile.png";
+                        }}
                     />
                     <select
-                        className="bg-transparent text-sm text-accent lg:text-white text-center"
+                        className="bg-transparent text-sm text-accent lg:text-white text-center cursor-pointer"
                         value={selectedOption}
-                        onChange={(e) => {
-                            setSelectedOption(e.target.value);
-                            if (e.target.value === "settings") {
-                                navigate("/settings");
-                            }
-                            if (e.target.value === "my-orders") {
-                                navigate("/my-orders");
-                            }
-                            if (e.target.value === "logout") {
-                                localStorage.removeItem("token");
-                                localStorage.removeItem("cart");
-                                sessionStorage.removeItem("checkoutCart");
-                                setUser(null);
-                                navigate("/");
-                            }
-                            setSelectedOption("me");
-                        }}
+                        onChange={handleSelectChange}
                     >
                         <option value="me">{user.firstName}</option>
                         <option className="bg-accent text-white" value="settings">

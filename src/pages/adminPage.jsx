@@ -1,90 +1,85 @@
-import { BsGift } from "react-icons/bs";
-import { FiShoppingCart } from "react-icons/fi";
-import { TbUsers } from "react-icons/tb";
-import { Link, Route, Routes, useNavigate } from "react-router-dom";
-import AdminProductsPage from "./admin/adminProductPage";
-import AdminAddProductForm from "./admin/adminAddProductForm";
-import AdminEditProductForm from "./admin/adminEditProductForm";
-import AdminOrdersPage from "./admin/adminOrdersPage";
 import { useEffect, useState } from "react";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 import LoadingScreen from "../components/loadingScreen";
+import AdminSidebar from "../components/admin/AdminSidebar";
+import AdminHeader from "../components/admin/AdminHeader";
+import AdminDashboard from "./admin/adminDashboard";
+import AdminOrdersPage from "./admin/adminOrdersPage";
+import AdminProductsPage from "./admin/adminProductPage";
 import AdminUsersPage from "./admin/adminUsersPage";
+import AdminAddProductForm from "./admin/adminAddProductForm";
+import AdminEditProductForm from "./admin/adminEditProductForm";
+import AdminProfile from "./admin/adminProfile";
+import AdminSettings from "./admin/adminSettings";
 
-export default function AdminPage(){
-
+export default function AdminPage() {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    useEffect(
-        ()=>{
-            const token = localStorage.getItem("token");
 
-            if(token != null){
+    useEffect(() => {
+        const token = localStorage.getItem("token");
 
-                api.get("/users/me" , {
-                    headers : {
-                        "Authorization" : `Bearer ${token}`
-                    }
-                }).then((res)=>{
-                    
-                    if(res.data.isAdmin){
+        if (token != null) {
+            api
+                .get("/users/me", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                .then((res) => {
+                    if (res.data.isAdmin) {
                         setUser(res.data);
-                    }else{
+                    } else {
                         toast.error("You are not authorized to access this page");
                         navigate("/");
                     }
-
-                }).catch((err)=>{
+                })
+                .catch((err) => {
                     console.log(err);
-                    setUser(null);
+                    toast.error("Session expired. Please login again.");
+                    navigate("/signin");
                 });
-
-            }else{
-                toast.error("You are not authorized to access this page");
-                navigate("/signin");
-            }
+        } else {
+            toast.error("You are not authorized to access this page");
+            navigate("/signin");
         }
-        ,[]
-    )
+    }, [navigate]);
 
-    return(
-        <div className="w-full h-full flex bg-primary">
+    function handleLogout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("cart");
+        sessionStorage.removeItem("checkoutCart");
+        toast.success("Logged out successfully");
+        navigate("/");
+    }
 
-            <div className="w-[300px] h-full bg-white flex flex-col shadow-2xl">
-                <div className="w-full h-[100px] py-4 px-2">
-                        
-                        <img src="/logo.png" className="h-full "/>
+    if (user == null) {
+        return <LoadingScreen />;
+    }
 
-                </div>
+    return (
+        <div className="w-full h-screen flex bg-primary overflow-hidden">
+            <AdminSidebar user={user} onLogout={handleLogout} />
 
-                <Link to="/admin" className="w-full p-4 text-xl text-gray-500  flex items-center gap-4">
-                    <FiShoppingCart />
-                    <span className="w-full h-full block ">Orders</span>
-                </Link>
+            <div className="flex-1 h-full flex flex-col overflow-hidden">
+                {/* Pass user + onLogout so the profile menu works */}
+                <AdminHeader user={user} onLogout={handleLogout} />
 
-                <Link to="/admin/products" className="w-full p-4 text-xl text-gray-500  flex items-center gap-4">
-                    <BsGift />
-                    <span className="w-full h-full block ">Products</span>
-                </Link>
-
-                <Link to="/admin/users" className="w-full p-4 text-xl text-gray-500  flex items-center gap-4">
-                    <TbUsers />
-                    <span className="w-full h-full block ">Users</span>
-                </Link>
-                
-            </div>
-
-            <div className="w-[calc(100%-300px)] h-full p-4">
-                {user==null?<LoadingScreen/>:
-                <Routes>
-                    <Route path="/" element={<AdminOrdersPage/>}/>
-                    <Route path="/products" element={<AdminProductsPage/>}/>
-                    <Route path="/users" element={<AdminUsersPage/>}/>
-                    <Route path="/add-product" element={<AdminAddProductForm/>}/>
-                    <Route path="/edit-product" element={<AdminEditProductForm/>}/>
-                </Routes>}
+                <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+                    <Routes>
+                        <Route path="/" element={<AdminOrdersPage />} />
+                        <Route path="/dashboard" element={<AdminDashboard />} />
+                        <Route path="/products" element={<AdminProductsPage />} />
+                        <Route path="/users" element={<AdminUsersPage />} />
+                        <Route path="/add-product" element={<AdminAddProductForm />} />
+                        <Route path="/edit-product" element={<AdminEditProductForm />} />
+                        <Route path="/profile" element={<AdminProfile />} />
+                        <Route path="/settings" element={<AdminSettings />} />
+                    </Routes>
+                </main>
             </div>
         </div>
-    )
+    );
 }
