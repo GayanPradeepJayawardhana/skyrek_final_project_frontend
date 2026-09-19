@@ -1,13 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { FiLogIn, FiUserPlus, FiChevronDown } from "react-icons/fi";
+import {
+    FiLogIn,
+    FiUserPlus,
+    FiChevronDown,
+    FiUser,
+    FiShoppingBag,
+    FiSettings,
+    FiLogOut,
+} from "react-icons/fi";
 
 export default function UserData() {
     const [user, setUser] = useState(null);
     const [selectedOption, setSelectedOption] = useState("me");
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
     const navigate = useNavigate();
 
+    // Load user
     useEffect(() => {
         const token = localStorage.getItem("token");
 
@@ -28,6 +39,19 @@ export default function UserData() {
         }
     }, []);
 
+    // Close dropdown on outside click
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Mobile select handler
     function handleSelectChange(e) {
         const value = e.target.value;
         setSelectedOption(value);
@@ -39,14 +63,24 @@ export default function UserData() {
             navigate("/my-orders");
         }
         if (value === "logout") {
-            localStorage.removeItem("token");
-            localStorage.removeItem("cart");
-            sessionStorage.removeItem("checkoutCart");
-            setUser(null);
-            navigate("/");
+            handleLogout();
         }
 
         setSelectedOption("me");
+    }
+
+    function handleLogout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("cart");
+        sessionStorage.removeItem("checkoutCart");
+        setUser(null);
+        setMenuOpen(false);
+        navigate("/");
+    }
+
+    function goTo(path) {
+        setMenuOpen(false);
+        navigate(path);
     }
 
     return (
@@ -88,9 +122,12 @@ export default function UserData() {
                     </Link>
                 </>
             ) : (
-                <div className="relative group">
-                    {/* ===== USER PROFILE DROPDOWN (desktop) ===== */}
-                    <div className="hidden lg:flex items-center gap-3 pl-1 pr-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all cursor-pointer">
+                <div className="relative" ref={menuRef}>
+                    {/* ===== USER PROFILE TRIGGER (desktop) ===== */}
+                    <button
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="hidden lg:flex items-center gap-3 pl-1 pr-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all cursor-pointer"
+                    >
                         <img
                             src={user.image || "/default-profile.png"}
                             className="w-8 h-8 rounded-full object-cover border-2 border-white/40"
@@ -109,47 +146,62 @@ export default function UserData() {
                         </div>
                         <FiChevronDown
                             size={14}
-                            className="text-white/60 group-hover:text-white transition-colors"
+                            className={`text-white/60 transition-transform ${
+                                menuOpen ? "rotate-180 text-white" : ""
+                            }`}
                         />
-                    </div>
+                    </button>
 
-                    {/* Dropdown menu */}
-                    <div className="hidden lg:block absolute right-0 top-[calc(100%+8px)] w-[220px] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                        <div className="px-4 py-3 border-b border-gray-100">
-                            <div className="text-sm font-semibold text-gray-800 truncate">
-                                {user.firstName} {user.lastName}
+                    {/* ===== DESKTOP DROPDOWN ===== */}
+                    {menuOpen && (
+                        <div className="hidden lg:block absolute right-0 top-[calc(100%+8px)] w-[240px] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-slide-in">
+                            {/* User info */}
+                            <div className="px-4 py-3 border-b border-gray-100">
+                                <div className="text-sm font-semibold text-gray-800 truncate">
+                                    {user.firstName} {user.lastName}
+                                </div>
+                                <div className="text-xs text-gray-400 truncate">
+                                    {user.email}
+                                </div>
                             </div>
-                            <div className="text-xs text-gray-400 truncate">
-                                {user.email}
+
+                            {/* Menu items */}
+                            <div className="py-1">
+                                <button
+                                    onClick={() => goTo("/my-orders")}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                                >
+                                    <FiShoppingBag
+                                        size={16}
+                                        className="text-gray-400"
+                                    />
+                                    My Orders
+                                </button>
+
+                                <button
+                                    onClick={() => goTo("/settings")}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                                >
+                                    <FiSettings
+                                        size={16}
+                                        className="text-gray-400"
+                                    />
+                                    Settings
+                                </button>
+                            </div>
+
+                            {/* Logout */}
+                            <div className="border-t border-gray-100 pt-1">
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left font-medium"
+                                >
+                                    <FiLogOut size={16} />
+                                    Logout
+                                </button>
                             </div>
                         </div>
-                        <button
-                            onClick={() => navigate("/my-orders")}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                            My Orders
-                        </button>
-                        <button
-                            onClick={() => navigate("/settings")}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                            Settings
-                        </button>
-                        <div className="border-t border-gray-100 mt-1 pt-1">
-                            <button
-                                onClick={() => {
-                                    localStorage.removeItem("token");
-                                    localStorage.removeItem("cart");
-                                    sessionStorage.removeItem("checkoutCart");
-                                    setUser(null);
-                                    navigate("/");
-                                }}
-                                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </div>
+                    )}
 
                     {/* ===== MOBILE DROPDOWN ===== */}
                     <div className="lg:hidden text-white flex flex-col justify-center items-center gap-1">

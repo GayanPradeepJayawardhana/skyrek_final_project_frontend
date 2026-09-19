@@ -3,113 +3,295 @@ import { IoMdEye } from "react-icons/io";
 import getFormattedPrice from "../utils/price-formatter";
 import api from "../utils/api";
 import toast from "react-hot-toast";
+import {
+    FiX,
+    FiUser,
+    FiMail,
+    FiPhone,
+    FiMapPin,
+    FiPackage,
+    FiCalendar,
+} from "react-icons/fi";
 
-export default function AdminOrderDataModal(props) {
-	const [isOpen, setIsOpen] = useState(false);
-	const order = props.order;
-	const refresh = props.refresh;
+const STATUS_STYLES = {
+    Pending: "bg-amber-50 text-amber-700",
+    Processing: "bg-blue-50 text-blue-700",
+    Shipped: "bg-violet-50 text-violet-700",
+    Delivered: "bg-emerald-50 text-emerald-700",
+};
 
-    function updateOrderStatus(newStatus){
+export default function AdminOrderDataModal({ order, refresh, isAdmin }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [updating, setUpdating] = useState(false);
+
+    function updateOrderStatus(newStatus) {
         const token = localStorage.getItem("token");
+        setUpdating(true);
 
-        api.put("/orders/"+order.orderId , {
-            status : newStatus
-        } , {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        }).then((res)=>{
-            toast.success("Order status updated successfully")
-            console.log(res.data)
-            refresh()
-        }).catch((err)=>{
-            console.log(err)
-            toast.error("Failed to update order status")
-        })
+        api.put(
+            "/orders/" + order.orderId,
+            { status: newStatus },
+            { headers: { Authorization: `Bearer ${token}` } }
+        )
+            .then((res) => {
+                toast.success("Order status updated");
+                console.log(res.data);
+                refresh();
+            })
+            .catch((err) => {
+                console.log(err);
+                toast.error("Failed to update order status");
+            })
+            .finally(() => setUpdating(false));
     }
 
-	return (
-		<>
-			<IoMdEye
-				className="text-blue-600 text-xl rounded-full hover:border cursor-pointer"
-				onClick={() => setIsOpen(true)}
-			/>
-			{isOpen && (
-				<div className="w-screen h-screen fixed left-0 top-0 bg-black/70 flex justify-center items-center z-50">
-					<div className="w-[700px] max-h-screen flex flex-col bg-primary rounded-xl">
-						<div className="w-full h-[250px] bg-white relative">
-                            {/* orderId , firstName, lastName, email, phone, addressLine1, addressLine2, city, status */}
-                            {/* close button */}
+    const statusStyle =
+        STATUS_STYLES[order.status] || STATUS_STYLES.Pending;
+
+    return (
+        <>
+            <button
+                onClick={() => setIsOpen(true)}
+                className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
+                title="View order details"
+            >
+                <IoMdEye size={18} />
+            </button>
+
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+                    onClick={() => setIsOpen(false)}
+                >
+                    <div
+                        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden my-8"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="relative bg-gradient-to-br from-accent to-[#0a0f3d] px-6 py-5 text-white">
                             <button
-                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
                                 onClick={() => setIsOpen(false)}
+                                className="absolute right-4 top-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                             >
-                                ✕
+                                <FiX size={18} />
                             </button>
-                            <div className="w-full h-full p-4 flex flex-col gap-2">
-                                <h2 className="text-2xl font-semibold">Order ID: {order.orderId}</h2>
-                                <p>Name: {order.firstName} {order.lastName}</p>
-                                <p>Email: {order.email}</p>
-                                <p>Phone: {order.phone}</p>
-                                <p>Address: {order.addressLine1} {order.addressLine2} , {order.city}</p>
-                                <p>Status: {order.status} 
-                                    {props.isAdmin&&<select className="ml-4 border" defaultValue={order.status}
-                                    onChange={
-                                        (e)=>{
-                                            updateOrderStatus(e.target.value)
-                                        }
-                                    }>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Processing">Processing</option>
-                                        <option value="Shipped">Shipped</option>
-                                        <option value="Delivered">Delivered</option>
-                                    </select>}
-                                </p>
+                            <div className="flex items-center gap-3">
+                                <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                                    <FiPackage size={20} />
+                                </div>
+                                <div>
+                                    <div className="text-xs text-white/60 uppercase tracking-wider">
+                                        Order ID
+                                    </div>
+                                    <h2 className="text-xl font-bold">
+                                        {order.orderId}
+                                    </h2>
+                                </div>
                             </div>
                         </div>
-						<div className="w-full h-[400px] p-4 flex flex-col gap-4 overflow-y-scroll">
-							{order.items.map((item, index) => {
-								return (
-									<div
-										className="w-[600px] h-[150px]  shadow-2xl bg-white my-4 flex flex-row relative"
-										key={index}
-									>
-										<img
-											src={item.product.image || "/default-product-1.png"}
-											className="h-full aspect-square object-cover"
-											onError={(e) => {
-												e.target.onerror = null;
-												e.target.src = "/default-product-1.png";
-											}}
-										/>
 
-										<div className="h-full  w-[450px] flex flex-col  p-4">
-											<h3 className="text-lg font-bold">{item.product.name}</h3>
-											{/* labelled price */}
-											<p className="text-gray-500 text-sm line-through">
-												{getFormattedPrice(item.product.labelledPrice)}
-											</p>
-											<p className="text-accent font-semibold">
-												{getFormattedPrice(item.product.price)}
-											</p>
-											<div className="h-[30px] w-[100px] mt-2 border border-accent rounded-4xl flex flex-row items-center justify-center overflow-hidden">
-												<span className="w-[40px] h-full flex justify-center items-center">
-													{item.qty}
-												</span>
-											</div>
-										</div>
+                        {/* Body */}
+                        <div className="max-h-[70vh] overflow-y-auto">
+                            {/* Customer + Shipping */}
+                            <div className="p-6 border-b border-gray-100">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                            <FiUser
+                                                size={16}
+                                                className="text-accent"
+                                            />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+                                                Customer
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-800 truncate">
+                                                {order.firstName}{" "}
+                                                {order.lastName}
+                                            </div>
+                                        </div>
+                                    </div>
 
-										{/* total price */}
-										<span className="absolute bottom-2 text-xl right-2 text-accent font-semibold">
-											{getFormattedPrice(item.product.price * item.qty)}
-										</span>
-									</div>
-								);
-							})}
-						</div>
-					</div>
-				</div>
-			)}
-		</>
-	);
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                            <FiMail
+                                                size={16}
+                                                className="text-accent"
+                                            />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+                                                Email
+                                            </div>
+                                            <div className="text-sm text-gray-700 truncate">
+                                                {order.email}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                            <FiPhone
+                                                size={16}
+                                                className="text-accent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+                                                Phone
+                                            </div>
+                                            <div className="text-sm text-gray-700">
+                                                {order.phone}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                            <FiMapPin
+                                                size={16}
+                                                className="text-accent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+                                                Address
+                                            </div>
+                                            <div className="text-sm text-gray-700">
+                                                {order.addressLine1}
+                                                {order.addressLine2 &&
+                                                    `, ${order.addressLine2}`}
+                                                , {order.city}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                            <FiCalendar
+                                                size={16}
+                                                className="text-accent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
+                                                Status
+                                            </div>
+                                            {isAdmin ? (
+                                                <select
+                                                    value={order.status}
+                                                    onChange={(e) =>
+                                                        updateOrderStatus(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    disabled={updating}
+                                                    className={`text-sm font-semibold rounded-lg px-3 py-1.5 border-0 focus:outline-none focus:ring-2 focus:ring-accent/20 cursor-pointer ${statusStyle}`}
+                                                >
+                                                    <option value="Pending">
+                                                        Pending
+                                                    </option>
+                                                    <option value="Processing">
+                                                        Processing
+                                                    </option>
+                                                    <option value="Shipped">
+                                                        Shipped
+                                                    </option>
+                                                    <option value="Delivered">
+                                                        Delivered
+                                                    </option>
+                                                </select>
+                                            ) : (
+                                                <span
+                                                    className={`inline-flex px-3 py-1 rounded-lg text-xs font-semibold ${statusStyle}`}
+                                                >
+                                                    {order.status}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Items */}
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">
+                                        Items ({order.items.length})
+                                    </h3>
+                                </div>
+
+                                <div className="flex flex-col gap-3">
+                                    {order.items.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border border-gray-100"
+                                        >
+                                            <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-gray-100">
+                                                <img
+                                                    src={
+                                                        item.product.image ||
+                                                        "/default-product-1.png"
+                                                    }
+                                                    alt={item.product.name}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.onerror =
+                                                            null;
+                                                        e.target.src =
+                                                            "/default-product-1.png";
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-semibold text-gray-800 line-clamp-1">
+                                                    {item.product.name}
+                                                </h4>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-xs text-accent font-semibold">
+                                                        {getFormattedPrice(
+                                                            item.product.price
+                                                        )}
+                                                    </span>
+                                                    <span className="text-xs text-gray-400">
+                                                        × {item.qty}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="text-right flex-shrink-0">
+                                                <div className="text-[10px] text-gray-400 uppercase tracking-wide">
+                                                    Subtotal
+                                                </div>
+                                                <div className="text-sm font-bold text-gray-800">
+                                                    {getFormattedPrice(
+                                                        item.product.price *
+                                                            item.qty
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Total */}
+                                <div className="mt-5 pt-5 border-t border-gray-100 flex items-center justify-between">
+                                    <span className="text-sm font-semibold text-gray-700">
+                                        Total Amount
+                                    </span>
+                                    <span className="text-xl font-bold text-accent">
+                                        {getFormattedPrice(
+                                            order.totalAmount
+                                        )}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 }

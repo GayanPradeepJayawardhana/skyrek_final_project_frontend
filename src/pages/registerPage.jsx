@@ -30,7 +30,7 @@ export default function RegisterPage(){
                     if(res.data.isAdmin){
                         navigate("/admin")
                     }else{
-                        navigate("/")
+                        navigate("/products")
                     }
 
                 }).catch((err)=>{

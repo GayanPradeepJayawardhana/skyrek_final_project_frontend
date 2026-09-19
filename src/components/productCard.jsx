@@ -1,21 +1,105 @@
 import { Link } from "react-router-dom";
 import getFormattedPrice from "../utils/price-formatter";
+import { FiShoppingBag } from "react-icons/fi";
 
-export default function ProductCard(props){
+export default function ProductCard({ product }) {
+    const hasDiscount = product.price < product.labelledPrice;
+    const discountPercent = hasDiscount
+        ? Math.round(
+              ((product.labelledPrice - product.price) /
+                  product.labelledPrice) *
+                  100
+          )
+        : 0;
+    const outOfStock = product.stock === 0;
 
-    const product = props.product;
+    const imageSrc =
+        product.images && product.images.length > 0
+            ? product.images[0]
+            : "/default-product-1.png";
 
     return (
-        <Link to={"/overview/"+product.productId} className="w-72 h-96 bg-white rounded-lg shadow-xl flex flex-col">
-            <img src={product.images[0]} className="w-full h-[60%] object-cover rounded-tl-lg rounded-tr-lg"/>
-            <div className="w-full h-[40%] p-4 flex flex-col justify-between">
-                <h1 className="text-lg font-semibold">{product.name}</h1>
-                
-                {
-                    product.price < product.labelledPrice && <p className="text-gray-500 line-through">{getFormattedPrice(product.labelledPrice)}</p>
-                }
-                <p className="text-accent text-lg font-semibold">{getFormattedPrice(product.price)}</p>
+        <Link
+            to={"/overview/" + product.productId}
+            className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
+        >
+            {/* Image */}
+            <div className="relative w-full h-52 overflow-hidden bg-gray-50">
+                <img
+                    src={imageSrc}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/default-product-1.png";
+                    }}
+                />
+
+                {/* Discount badge */}
+                {hasDiscount && !outOfStock && (
+                    <span className="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-md">
+                        {discountPercent}% OFF
+                    </span>
+                )}
+
+                {/* Brand chip */}
+                {product.brand && (
+                    <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 backdrop-blur-sm text-gray-700 text-[10px] font-semibold uppercase tracking-wide rounded-full shadow-sm">
+                        {product.brand}
+                    </span>
+                )}
+
+                {/* Out of stock overlay */}
+                {outOfStock && (
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm px-4 py-2 bg-black/70 rounded-lg">
+                            Out of Stock
+                        </span>
+                    </div>
+                )}
+
+                {/* Hover overlay CTA */}
+                {!outOfStock && (
+                    <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <span className="inline-flex items-center gap-1.5 text-white text-xs font-semibold">
+                            <FiShoppingBag size={12} />
+                            View Details
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Content */}
+            <div className="p-5 flex flex-col flex-1">
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
+                    {product.category || "Product"}
+                </div>
+
+                <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 min-h-[40px] group-hover:text-accent transition-colors">
+                    {product.name}
+                </h3>
+
+                {/* Price */}
+                <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+                    <span className="text-accent font-bold text-base">
+                        {getFormattedPrice(product.price)}
+                    </span>
+                    {hasDiscount && (
+                        <span className="text-gray-400 line-through text-xs">
+                            {getFormattedPrice(product.labelledPrice)}
+                        </span>
+                    )}
+                </div>
+
+                {/* Stock chip */}
+                {!outOfStock && product.stock <= 5 && (
+                    <div className="mt-2">
+                        <span className="inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-semibold">
+                            Only {product.stock} left
+                        </span>
+                    </div>
+                )}
             </div>
         </Link>
-    )
+    );
 }

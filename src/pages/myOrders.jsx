@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../utils/api";
 import LoadingScreen from "../components/loadingScreen";
 import getFormattedPrice from "../utils/price-formatter";
 import formatTimestamp from "../utils/date-formatter";
 import AdminOrderDataModal from "../components/orderDataModal";
 import toast from "react-hot-toast";
+import { FiPackage, FiShoppingBag, FiClock } from "react-icons/fi";
+
+const STATUS_STYLES = {
+    Pending: "bg-amber-50 text-amber-700 border-amber-100",
+    Processing: "bg-blue-50 text-blue-700 border-blue-100",
+    Shipped: "bg-violet-50 text-violet-700 border-violet-100",
+    Delivered: "bg-emerald-50 text-emerald-700 border-emerald-100",
+};
 
 export default function MyOrders() {
     const [orders, setOrders] = useState([]);
@@ -17,12 +26,16 @@ export default function MyOrders() {
     useEffect(() => {
         if (loading) {
             const token = localStorage.getItem("token");
-            api
-                .get("/orders/" + pageNumber + "/" + pageSize, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                })
+
+            if (!token) {
+                toast.error("Please login to view your orders");
+                window.location.href = "/signin";
+                return;
+            }
+
+            api.get("/orders/" + pageNumber + "/" + pageSize, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
                 .then((res) => {
                     setOrders(res.data.orders);
                     setTotalOrders(res.data.totalOrders);
@@ -32,7 +45,8 @@ export default function MyOrders() {
                 .catch((err) => {
                     console.error("Failed to load orders:", err);
                     toast.error(
-                        err?.response?.data?.message || "Failed to load orders"
+                        err?.response?.data?.message ||
+                            "Failed to load orders"
                     );
                     setOrders([]);
                     setTotalPages(1);
@@ -43,110 +57,191 @@ export default function MyOrders() {
     }, [loading, pageNumber, pageSize]);
 
     return (
-        <div className="w-full h-full flex flex-col items-center ">
-            <div className="w-full h-[100px] bg-white shadow-2xl mb-10 rounded-lg flex p-4 items-center justify-between">
-                <h1 className="text-2xl font-semibold">My Orders</h1>
-                <div className="h-full gap-4 flex items-center">
-                    {totalOrders} Orders
+        <div className="w-full min-h-full bg-primary pb-24 lg:pb-12">
+            {/* ===== HEADER ===== */}
+            <div className="w-full bg-gradient-to-br from-[#001a84] via-[#00136a] to-[#0a0f3d] relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20">
+                    <div className="absolute top-0 right-1/4 w-64 h-64 bg-blue-400 rounded-full blur-[100px]"></div>
+                    <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-violet-500 rounded-full blur-[100px]"></div>
+                </div>
+
+                <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-10">
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                            <FiShoppingBag
+                                size={24}
+                                className="text-white"
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl lg:text-3xl font-bold text-white">
+                                My Orders
+                            </h1>
+                            <p className="text-white/60 text-sm mt-0.5">
+                                {totalOrders}{" "}
+                                {totalOrders === 1 ? "order" : "orders"} placed
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {loading && <LoadingScreen />}
+            <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-8">
+                {loading && <LoadingScreen />}
 
-            {!loading && orders.length === 0 && (
-                <div className="w-full h-[200px] flex justify-center items-center text-gray-500 text-lg">
-                    You haven't placed any orders yet.
-                </div>
-            )}
+                {/* Empty state */}
+                {!loading && orders.length === 0 && (
+                    <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm py-20 flex flex-col items-center justify-center px-6">
+                        <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mb-5">
+                            <FiPackage size={32} className="text-accent" />
+                        </div>
+                        <h2 className="text-lg font-bold text-gray-800 mb-2">
+                            No orders yet
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-6 text-center max-w-md">
+                            You haven't placed any orders. Start browsing our
+                            products and place your first order!
+                        </p>
+                        <Link
+                            to="/products"
+                            className="inline-flex items-center gap-2 px-6 h-[46px] rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-colors shadow-lg shadow-accent/20"
+                        >
+                            <FiShoppingBag size={16} />
+                            Browse Products
+                        </Link>
+                    </div>
+                )}
 
-            {!loading && orders.length > 0 && (
-                <table className="w-full text-center rounded-lg overflow-hidden">
-                    <thead className="bg-accent text-white h-[40px] ">
-                        <tr>
-                            <th className="w-[5%]">Order ID</th>
-                            <th className="w-[7%]">Email</th>
-                            <th className="w-[22%]">Name</th>
-                            <th className="w-[9%]">City</th>
-                            <th className="w-[9%]">Phone</th>
-                            <th className="w-[7%]">Status</th>
-                            <th className="w-[7%]">Date</th>
-                            <th className="w-[9%]">totalAmount</th>
-                            <th className="w-[15%]">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                {/* Orders list */}
+                {!loading && orders.length > 0 && (
+                    <div className="flex flex-col gap-4">
                         {orders.map((order) => {
+                            const statusStyle =
+                                STATUS_STYLES[order.status] ||
+                                STATUS_STYLES.Pending;
+
                             return (
-                                <tr
-                                    className="odd:bg-gray-300 even:bg-white h-[60px]"
+                                <div
                                     key={order.orderId}
+                                    className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
                                 >
-                                    <td>{order.orderId}</td>
-                                    <td>{order.email}</td>
-                                    <td>
-                                        {order.firstName} {order.lastName}
-                                    </td>
-                                    <td>{order.city}</td>
-                                    <td>{order.phone}</td>
-                                    <td>{order.status}</td>
-                                    <td>{formatTimestamp(order.date)}</td>
-                                    <td>{getFormattedPrice(order.totalAmount)}</td>
-                                    <td>
-                                        <div className="w-full flex justify-center items-center gap-4">
-                                            <AdminOrderDataModal
-                                                isAdmin={false}
-                                                order={order}
-                                                refresh={() => setLoading(true)}
-                                            />
+                                    <div className="p-5 lg:p-6">
+                                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                            {/* Left: Order info */}
+                                            <div className="flex items-start gap-4 flex-1 min-w-0">
+                                                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                                    <FiPackage
+                                                        size={20}
+                                                        className="text-accent"
+                                                    />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-3 flex-wrap">
+                                                        <span className="font-bold text-accent text-sm">
+                                                            {
+                                                                order.orderId
+                                                            }
+                                                        </span>
+                                                        <span
+                                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${statusStyle}`}
+                                                        >
+                                                            {
+                                                                order.status
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="font-semibold text-gray-800 text-sm mt-1 truncate">
+                                                        {order.firstName}{" "}
+                                                        {order.lastName}
+                                                    </h3>
+                                                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                                        <span className="inline-flex items-center gap-1">
+                                                            <FiClock
+                                                                size={12}
+                                                            />
+                                                            {formatTimestamp(
+                                                                order.date
+                                                            )}
+                                                        </span>
+                                                        <span>
+                                                            • {order.city}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Right: Total + actions */}
+                                            <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-6 pl-16 lg:pl-0">
+                                                <div className="text-right">
+                                                    <div className="text-[10px] text-gray-400 uppercase tracking-wide">
+                                                        Total
+                                                    </div>
+                                                    <div className="text-lg font-bold text-gray-800">
+                                                        {getFormattedPrice(
+                                                            order.totalAmount
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <AdminOrderDataModal
+                                                    isAdmin={false}
+                                                    order={order}
+                                                    refresh={() =>
+                                                        setLoading(true)
+                                                    }
+                                                />
+                                            </div>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </div>
+                                </div>
                             );
                         })}
-                    </tbody>
-                </table>
-            )}
+                    </div>
+                )}
 
-            <div className="p-2 fixed bottom-4 bg-white shadow-2xl flex justify-center items-center">
-                <select
-                    value={pageSize}
-                    onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setPageNumber(1);
-                        setLoading(true);
-                    }}
-                    className="h-full px-4 border-r"
-                >
-                    <option value={2}>2 per page</option>
-                    <option value={5}>5 per page</option>
-                    <option value={10}>10 per page</option>
-                    <option value={20}>20 per page</option>
-                </select>
-                <div className="h-full flex items-center justify-center gap-4">
-                    <button
-                        disabled={pageNumber === 1}
-                        onClick={() => {
-                            setPageNumber(pageNumber - 1);
-                            setLoading(true);
-                        }}
-                        className="px-4 py-2 bg-gray-300 rounded disabled:bg-gray-200"
-                    >
-                        Previous
-                    </button>
-                    <span>
-                        Page {pageNumber} of {totalPages}
-                    </span>
-                    <button
-                        disabled={pageNumber === totalPages}
-                        onClick={() => {
-                            setPageNumber(pageNumber + 1);
-                            setLoading(true);
-                        }}
-                        className="px-4 py-2 bg-gray-300 rounded disabled:bg-gray-200"
-                    >
-                        Next
-                    </button>
-                </div>
+                {/* Pagination */}
+                {!loading && totalOrders > 0 && (
+                    <div className="mt-6 flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+                        <select
+                            value={pageSize}
+                            onChange={(e) => {
+                                setPageSize(Number(e.target.value));
+                                setPageNumber(1);
+                                setLoading(true);
+                            }}
+                            className="h-[36px] px-3 pr-8 rounded-lg border border-gray-200 bg-white text-sm focus:border-accent focus:outline-none cursor-pointer"
+                        >
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                        </select>
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                disabled={pageNumber === 1}
+                                onClick={() => {
+                                    setPageNumber(pageNumber - 1);
+                                    setLoading(true);
+                                }}
+                                className="px-4 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm text-gray-600 font-medium">
+                                Page {pageNumber} of {totalPages}
+                            </span>
+                            <button
+                                disabled={pageNumber === totalPages}
+                                onClick={() => {
+                                    setPageNumber(pageNumber + 1);
+                                    setLoading(true);
+                                }}
+                                className="px-4 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

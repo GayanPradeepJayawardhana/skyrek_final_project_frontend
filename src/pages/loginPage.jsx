@@ -27,7 +27,7 @@ export default function LoginPage(){
                     if(res.data.isAdmin){
                         navigate("/admin")
                     }else{
-                        navigate("/")
+                        navigate("/products")
                     }
 
                 }).catch((err)=>{
@@ -67,7 +67,7 @@ export default function LoginPage(){
 
                 //window.location.href = "/"
 
-                navigate("/")
+                navigate("/products")
 
             }
 
