@@ -22,6 +22,36 @@ export default function AdminAddProductForm(){
 
     async function addProduct(){
 
+        // Validation
+        if(!productId || !name || !description || !price || !labelledPrice){
+            toast.error("Please fill in all required fields");
+            return;
+        }
+
+        if(images.length === 0){
+            toast.error("Please select at least one image");
+            return;
+        }
+
+        const numericPrice = Number(price);
+        const numericLabelledPrice = Number(labelledPrice);
+        const numericStock = Number(stock);
+
+        if(isNaN(numericPrice) || numericPrice <= 0){
+            toast.error("Price must be a valid positive number");
+            return;
+        }
+
+        if(isNaN(numericLabelledPrice) || numericLabelledPrice <= 0){
+            toast.error("Labelled Price must be a valid positive number");
+            return;
+        }
+
+        if(isNaN(numericStock) || numericStock < 0){
+            toast.error("Stock must be a valid non-negative number");
+            return;
+        }
+
         setIsLoading(true);
 
         const token = localStorage.getItem("token");

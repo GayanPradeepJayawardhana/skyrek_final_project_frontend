@@ -1,93 +1,100 @@
-import { useEffect, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
-import api from "../utils/api"
-import LoadingScreen from "../components/loadingScreen"
-import ProductImageSlideShow from "../components/productImageSlideShow"
-import getFormattedPrice from "../utils/price-formatter"
-import { addToCart } from "../utils/cart"
-import toast from "react-hot-toast"
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import api from "../utils/api";
+import LoadingScreen from "../components/loadingScreen";
+import ProductImageSlideShow from "../components/productImageSlideShow";
+import getFormattedPrice from "../utils/price-formatter";
+import { addToCart } from "../utils/cart";
+import toast from "react-hot-toast";
 
-export default function ProductOverview(){
-    const parameters = useParams()
-    const navigate = useNavigate()
-    const [product , setProduct] = useState(null)
+export default function ProductOverview() {
+    const parameters = useParams();
+    const navigate = useNavigate();
+    const [product, setProduct] = useState(null);
 
-    useEffect(()=>{
-
-        if(parameters.productId==null){
-            navigate("/products")
+    useEffect(() => {
+        if (parameters.productId == null) {
+            navigate("/products");
+            return;
         }
-        api.get("/products/"+parameters.productId).then((response)=>{
-            setProduct(response.data)
-        }).catch((error)=>{
-            console.error("Error fetching product details:", error)
-            navigate("/products")
-        })
 
-    }, [])
-
+        api.get("/products/" + parameters.productId)
+            .then((response) => {
+                setProduct(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching product details:", error);
+                toast.error("Product not found");
+                navigate("/products");
+            });
+    }, [parameters.productId, navigate]);
 
     return (
-        <div className="w-full h-auto lg:h-full pt-10 lg:pt-0  bg-primary flex flex-col lg:flex-row justify-center items-center">
-            {
-                product == null&& <LoadingScreen/>
-            }
-            {
-                product != null && <>
-
-                    <div className="w-full lg:w-1/2  h-full flex justify-center items-center">
-                        <ProductImageSlideShow images={product.images}/>
+        <div className="w-full h-auto lg:h-full pt-10 lg:pt-0 bg-primary flex flex-col lg:flex-row justify-center items-center">
+            {product == null && <LoadingScreen />}
+            {product != null && (
+                <>
+                    <div className="w-full lg:w-1/2 h-full flex justify-center items-center">
+                        <ProductImageSlideShow images={product.images} />
                     </div>
-                    <div className="w-full lg:w-1/2  flex flex-col p-6 h-full">
-                        <span className="text-gray-500 text-sm italic mb-4">{product.productId}</span>
-                        {/* brand and model */}
-                        <p className="text-gray-500 text-sm italic mb-4">{product.brand+" "+product.model}</p>
-                        <h1 className="text-3xl font-semibold mb-6">{product.name}
-                            {
-                                product.altNames.map(
-                                    (altNames, index) => {
-                                        return (
-                                            <span key={index} className=" text-gray-500 ">{" | "+altNames}</span>
-                                        )
-                                    }
-                                )
-                            }
+                    <div className="w-full lg:w-1/2 flex flex-col p-6 h-full">
+                        <span className="text-gray-500 text-sm italic mb-4">
+                            {product.productId}
+                        </span>
+                        <p className="text-gray-500 text-sm italic mb-4">
+                            {product.brand + " " + product.model}
+                        </p>
+                        <h1 className="text-3xl font-semibold mb-6">
+                            {product.name}
+                            {product.altNames.map((altName, index) => {
+                                return (
+                                    <span key={index} className="text-gray-500">
+                                        {" | " + altName}
+                                    </span>
+                                );
+                            })}
                         </h1>
-                        {
-                            product.price < product.labelledPrice && <p className="text-gray-500 text-lg line-through mb-2">{getFormattedPrice(product.labelledPrice)}</p>
-                        }
-                        <p className="text-xl text-accent font-semibold ">{getFormattedPrice(product.price)}</p>
+                        {product.price < product.labelledPrice && (
+                            <p className="text-gray-500 text-lg line-through mb-2">
+                                {getFormattedPrice(product.labelledPrice)}
+                            </p>
+                        )}
+                        <p className="text-xl text-accent font-semibold ">
+                            {getFormattedPrice(product.price)}
+                        </p>
                         <p className="text-gray-700 mt-6">{product.description}</p>
                         <div className="flex">
-                            <button className="w-[220px] p-2 text-white bg-accent rounded-sm hover:bg-accent/90 mt-6" 
-                            onClick={
-                                ()=>{
-                                    addToCart(product , 1)
-                                    toast.success("Product added to cart")
-                                }
-                            }>Add to Cart</button>
-                            <Link className="w-[220px] p-2 text-gray-700 bg-gray-300 rounded-sm hover:bg-gray-400 mt-6 ml-4 text-center"
+                            <button
+                                className="w-[220px] p-2 text-white bg-accent rounded-sm hover:bg-accent/90 mt-6"
+                                onClick={() => {
+                                    addToCart(product, 1);
+                                    toast.success("Product added to cart");
+                                }}
+                            >
+                                Add to Cart
+                            </button>
+                            <Link
+                                className="w-[220px] p-2 text-gray-700 bg-gray-300 rounded-sm hover:bg-gray-400 mt-6 ml-4 text-center"
                                 to="/checkout"
-                               state={
-                                [
+                                state={[
                                     {
-                                        product : {
-                                            productId : product.productId,
-                                            name : product.name,
-                                            image : product.images[0],
-                                            price : product.price,
-                                            labelledPrice : product.labelledPrice
+                                        product: {
+                                            productId: product.productId,
+                                            name: product.name,
+                                            image: product.images[0],
+                                            price: product.price,
+                                            labelledPrice: product.labelledPrice,
                                         },
-                                        qty : 1
-                                    }
-                                ]
-                               }
-                            >Buy Now</Link>
+                                        qty: 1,
+                                    },
+                                ]}
+                            >
+                                Buy Now
+                            </Link>
                         </div>
                     </div>
-
                 </>
-            }
+            )}
         </div>
-    )
+    );
 }
