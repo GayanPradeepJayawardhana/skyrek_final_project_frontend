@@ -13,6 +13,8 @@ import AdminAddProductForm from "./admin/adminAddProductForm";
 import AdminEditProductForm from "./admin/adminEditProductForm";
 import AdminProfile from "./admin/adminProfile";
 import AdminSettings from "./admin/adminSettings";
+import AdminContactMessagesPage from "./admin/adminContactMessagesPage";
+
 
 export default function AdminPage() {
     const [user, setUser] = useState(null);
@@ -69,15 +71,19 @@ export default function AdminPage() {
 
                 <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
                     <Routes>
-                        <Route path="/" element={<AdminOrdersPage />} />
-                        <Route path="/dashboard" element={<AdminDashboard />} />
-                        <Route path="/products" element={<AdminProductsPage />} />
-                        <Route path="/users" element={<AdminUsersPage />} />
-                        <Route path="/add-product" element={<AdminAddProductForm />} />
-                        <Route path="/edit-product" element={<AdminEditProductForm />} />
-                        <Route path="/profile" element={<AdminProfile />} />
-                        <Route path="/settings" element={<AdminSettings />} />
-                    </Routes>
+                    <Route path="/" element={<AdminOrdersPage />} />
+                    <Route path="/dashboard" element={<AdminDashboard />} />
+                    <Route path="/products" element={<AdminProductsPage />} />
+                    <Route path="/users" element={<AdminUsersPage />} />
+                    <Route
+                        path="/contact-messages"
+                        element={<AdminContactMessagesPage />}
+                    />
+                    <Route path="/add-product" element={<AdminAddProductForm />} />
+                    <Route path="/edit-product" element={<AdminEditProductForm />} />
+                    <Route path="/profile" element={<AdminProfile />} />
+                    <Route path="/settings" element={<AdminSettings />} />
+                </Routes>
                 </main>
             </div>
         </div>

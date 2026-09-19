@@ -17,6 +17,7 @@ const routeTitles = {
     "/admin": "Orders",
     "/admin/products": "Products",
     "/admin/users": "Users",
+    "/admin/contact-messages": "Contact Messages",
     "/admin/add-product": "Add Product",
     "/admin/edit-product": "Edit Product",
     "/admin/profile": "My Profile",
@@ -41,7 +42,8 @@ export default function AdminHeader({ user, onLogout }) {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     // Close dropdown on route change
@@ -107,7 +109,7 @@ export default function AdminHeader({ user, onLogout }) {
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 border-2 border-white"></span>
                 </button>
 
-                {/* Profile dropdown — ADMIN ONLY */}
+                {/* Profile dropdown */}
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}

@@ -7,18 +7,43 @@ import {
     FiChevronLeft,
     FiChevronRight,
     FiLogOut,
+    FiMail,
 } from "react-icons/fi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../utils/api";
 
 const navItems = [
     { to: "/admin/dashboard", label: "Dashboard", icon: FiGrid, end: true },
     { to: "/admin", label: "Orders", icon: FiShoppingCart, end: true },
     { to: "/admin/products", label: "Products", icon: FiPackage },
     { to: "/admin/users", label: "Users", icon: FiUsers },
+    { to: "/admin/contact-messages", label: "Messages", icon: FiMail },
 ];
 
 export default function AdminSidebar({ user, onLogout }) {
     const [collapsed, setCollapsed] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch unread message count + poll every 60s
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const fetchUnread = () => {
+            api
+                .get("/contact/unread-count", {
+                    headers: { Authorization: `Bearer ${token}` },
+                })
+                .then((res) => setUnreadCount(res.data.unreadCount || 0))
+                .catch(() => {});
+        };
+
+        fetchUnread();
+
+        const interval = setInterval(fetchUnread, 60000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <aside
@@ -72,7 +97,7 @@ export default function AdminSidebar({ user, onLogout }) {
                                 to={item.to}
                                 end={item.end}
                                 className={({ isActive }) =>
-                                    `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-150 group ${
+                                    `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-150 group relative ${
                                         isActive
                                             ? "bg-accent text-white shadow-md shadow-accent/20"
                                             : "text-gray-600 hover:bg-accent-light hover:text-accent"
@@ -82,19 +107,45 @@ export default function AdminSidebar({ user, onLogout }) {
                             >
                                 {({ isActive }) => (
                                     <>
-                                        <item.icon
-                                            size={20}
-                                            className={`flex-shrink-0 ${
-                                                isActive
-                                                    ? "text-white"
-                                                    : "text-gray-500 group-hover:text-accent"
-                                            }`}
-                                        />
+                                        <div className="relative flex-shrink-0">
+                                            <item.icon
+                                                size={20}
+                                                className={`${
+                                                    isActive
+                                                        ? "text-white"
+                                                        : "text-gray-500 group-hover:text-accent"
+                                                }`}
+                                            />
+                                            {/* Collapsed badge (dot) */}
+                                            {collapsed &&
+                                                item.label === "Messages" &&
+                                                unreadCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white"></span>
+                                                )}
+                                        </div>
+
                                         {!collapsed && (
                                             <span className="text-sm font-medium">
                                                 {item.label}
                                             </span>
                                         )}
+
+                                        {/* Expanded badge */}
+                                        {!collapsed &&
+                                            item.label === "Messages" &&
+                                            unreadCount > 0 && (
+                                                <span
+                                                    className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold leading-tight ${
+                                                        isActive
+                                                            ? "bg-white text-accent"
+                                                            : "bg-red-500 text-white"
+                                                    }`}
+                                                >
+                                                    {unreadCount > 99
+                                                        ? "99+"
+                                                        : unreadCount}
+                                                </span>
+                                            )}
                                     </>
                                 )}
                             </NavLink>

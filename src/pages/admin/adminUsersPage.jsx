@@ -59,7 +59,8 @@ export default function AdminUsersPage() {
             .catch((err) => {
                 console.error(err);
                 toast.error(
-                    err?.response?.data?.message || "Failed to update block state"
+                    err?.response?.data?.message ||
+                        "Failed to update block state"
                 );
             });
     }
@@ -119,44 +120,54 @@ export default function AdminUsersPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((user) => {
-                            return (
-                                <tr
-                                    className="odd:bg-gray-300 even:bg-white h-[60px]"
-                                    key={user.email}
-                                >
-                                    <td>
-                                        <img
-                                            src={user.image}
-                                            alt="Profile"
-                                            className="w-12 h-12  rounded-full"
-                                        />
-                                    </td>
-                                    <td>{user.email}</td>
-                                    <td>{user.firstName}</td>
-                                    <td>{user.lastName}</td>
-                                    <td className="flex h-[60px] justify-center items-center gap-4">
-                                        {user.isAdmin ? "Admin" : "Customer"}{" "}
-                                        <BiRefresh
-                                            className="cursor-pointer text-2xl hover:text-accent"
-                                            onClick={() =>
-                                                handleRoleToggle(user.email)
-                                            }
-                                        />
-                                    </td>
-                                    <td>{user.isEmailVerified ? "Yes" : "No"}</td>
-                                    <td className="flex h-[60px] justify-center items-center gap-4">
-                                        {user.isBlocked ? "Blocked" : "Active"}{" "}
-                                        <BiRefresh
-                                            className="cursor-pointer text-2xl hover:text-accent"
-                                            onClick={() =>
-                                                handleBlockToggle(user.email)
-                                            }
-                                        />
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                        {users.map((user) => (
+                            <tr
+                                className="odd:bg-gray-300 even:bg-white h-[60px]"
+                                key={user.email}
+                            >
+                                <td>
+                                    <img
+                                        src={
+                                            user.image &&
+                                            user.image.trim() !== ""
+                                                ? user.image
+                                                : "/default-profile.png"
+                                        }
+                                        alt={`${user.firstName} ${user.lastName}`}
+                                        className="w-12 h-12 rounded-full object-cover bg-gray-100 mx-auto"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src =
+                                                "/default-profile.png";
+                                        }}
+                                    />
+                                </td>
+                                <td>{user.email}</td>
+                                <td>{user.firstName}</td>
+                                <td>{user.lastName}</td>
+                                <td className="flex h-[60px] justify-center items-center gap-4">
+                                    {user.isAdmin ? "Admin" : "Customer"}{" "}
+                                    <BiRefresh
+                                        className="cursor-pointer text-2xl hover:text-accent"
+                                        onClick={() =>
+                                            handleRoleToggle(user.email)
+                                        }
+                                    />
+                                </td>
+                                <td>
+                                    {user.isEmailVerified ? "Yes" : "No"}
+                                </td>
+                                <td className="flex h-[60px] justify-center items-center gap-4">
+                                    {user.isBlocked ? "Blocked" : "Active"}{" "}
+                                    <BiRefresh
+                                        className="cursor-pointer text-2xl hover:text-accent"
+                                        onClick={() =>
+                                            handleBlockToggle(user.email)
+                                        }
+                                    />
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             )}

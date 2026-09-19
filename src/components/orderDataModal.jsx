@@ -75,8 +75,12 @@ export default function AdminOrderDataModal(props) {
 										key={index}
 									>
 										<img
-											src={item.product.image}
-											className="h-full aspect-square"
+											src={item.product.image || "/default-product-1.png"}
+											className="h-full aspect-square object-cover"
+											onError={(e) => {
+												e.target.onerror = null;
+												e.target.src = "/default-product-1.png";
+											}}
 										/>
 
 										<div className="h-full  w-[450px] flex flex-col  p-4">

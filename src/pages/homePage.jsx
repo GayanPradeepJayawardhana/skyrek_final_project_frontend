@@ -7,6 +7,7 @@ import CheckoutPage from "./checkout";
 import MyOrders from "./myOrders";
 import Settings from "./settings";
 import LandingPage from "./landingComponent";
+import ContactUsPage from "./contactUs";
 
 export default function HomePage() {
 	return (
@@ -18,7 +19,7 @@ export default function HomePage() {
                     {/* products */}
                     <Route path="/products" element={<ProductsPage />} />
                     {/* contact-us */}
-                    <Route path="/contact-us" element={<h1>Contact Us Page</h1>} />
+                    <Route path="/contact-us" element={<ContactUsPage />} />
                     {/* about-us */}
                     <Route path="/about-us" element={<h1>About Us Page</h1>} />
                     {/* product-overview */}
