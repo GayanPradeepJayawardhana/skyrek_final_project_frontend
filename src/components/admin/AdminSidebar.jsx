@@ -58,8 +58,15 @@ export default function AdminSidebar({ user, onLogout }) {
             <div className="w-full h-[80px] flex items-center justify-between px-4 border-b border-gray-100">
                 {!collapsed ? (
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#0a0f3d] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-accent/20">
-                            iC
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#0a0f3d] flex items-center justify-center shadow-lg shadow-accent/20 overflow-hidden p-1.5">
+                            <img
+                                src="/logo.png"
+                                alt="iComputers Logo"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                    e.target.style.display = "none";
+                                }}
+                            />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-gray-800 leading-tight">
@@ -71,8 +78,15 @@ export default function AdminSidebar({ user, onLogout }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#0a0f3d] flex items-center justify-center text-white font-bold text-lg mx-auto shadow-lg shadow-accent/20">
-                        iC
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#0a0f3d] flex items-center justify-center mx-auto shadow-lg shadow-accent/20 overflow-hidden p-1.5">
+                        <img
+                            src="/logo.png"
+                            alt="iComputers Logo"
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                                e.target.style.display = "none";
+                            }}
+                        />
                     </div>
                 )}
 

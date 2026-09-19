@@ -7,7 +7,6 @@ import UserData from "./userData";
 export default function Header() {
     const location = useLocation();
 
-    // Defensive: never render the public header on admin routes
     if (location.pathname.startsWith("/admin")) {
         return null;
     }
@@ -15,7 +14,6 @@ export default function Header() {
     const loggedIn =
         typeof window !== "undefined" && !!localStorage.getItem("token");
 
-    // Desktop nav items
     const navItems = [
         { to: "/", label: "Home", icon: HiOutlineHome, end: true },
         { to: "/products", label: "Products", icon: HiOutlineCube },
@@ -31,10 +29,15 @@ export default function Header() {
                     to="/"
                     className="flex items-center gap-3 group flex-shrink-0"
                 >
-                    <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-all">
-                        <span className="text-white font-bold text-lg">
-                            iC
-                        </span>
+                    <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-all overflow-hidden p-1.5">
+                        <img
+                            src="/logo.png"
+                            alt="iComputers Logo"
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                                e.target.style.display = "none";
+                            }}
+                        />
                     </div>
                     <span className="hidden lg:block text-white font-bold text-xl tracking-tight">
                         iComputers
@@ -75,7 +78,6 @@ export default function Header() {
 
                 {/* ===== RIGHT: WISHLIST + ORDERS + CART + USER ===== */}
                 <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
-                    {/* Wishlist (only when logged in) */}
                     {loggedIn && (
                         <NavLink
                             to="/wishlist"
@@ -104,7 +106,6 @@ export default function Header() {
                         </NavLink>
                     )}
 
-                    {/* My Orders (only when logged in) */}
                     {loggedIn && (
                         <NavLink
                             to="/my-orders"
@@ -133,7 +134,6 @@ export default function Header() {
                         </NavLink>
                     )}
 
-                    {/* Cart button */}
                     <NavLink
                         to="/cart"
                         className={({ isActive }) =>
@@ -160,7 +160,6 @@ export default function Header() {
                         )}
                     </NavLink>
 
-                    {/* User dropdown */}
                     <UserData />
                 </div>
             </header>
@@ -195,7 +194,6 @@ export default function Header() {
                     </NavLink>
                 ))}
 
-                {/* Wishlist on mobile (logged in only) */}
                 {loggedIn && (
                     <NavLink
                         to="/wishlist"
@@ -222,7 +220,6 @@ export default function Header() {
                     </NavLink>
                 )}
 
-                {/* User / login on mobile */}
                 <UserData />
             </div>
         </>

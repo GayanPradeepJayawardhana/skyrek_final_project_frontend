@@ -168,10 +168,15 @@ export default function RegisterPage() {
                 <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
                     {/* Logo */}
                     <Link to="/" className="inline-flex items-center gap-3 w-fit">
-                        <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">
-                                iC
-                            </span>
+                        <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center overflow-hidden p-1.5">
+                            <img
+                                src="/logo.png"
+                                alt="iComputers Logo"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                    e.target.style.display = "none";
+                                }}
+                            />
                         </div>
                         <span className="text-white font-bold text-xl">
                             iComputers
@@ -286,8 +291,15 @@ export default function RegisterPage() {
                 {/* Mobile logo header */}
                 <div className="lg:hidden relative z-10 px-6 pt-8">
                     <Link to="/" className="inline-flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                            <span className="text-white font-bold">iC</span>
+                        <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center overflow-hidden p-1.5">
+                            <img
+                                src="/logo.png"
+                                alt="iComputers Logo"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                    e.target.style.display = "none";
+                                }}
+                            />
                         </div>
                         <span className="text-white font-bold text-lg">
                             iComputers
