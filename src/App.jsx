@@ -8,12 +8,12 @@ import TestPage from './pages/test'
 import { Toaster } from 'react-hot-toast'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import ForgetPasswordPage from './pages/forgetPassword'
-//357070172721-psc9uchu79ptgs1e12d4gbnli96j29mj.apps.googleusercontent.com
+//725095508798-e72ej4f8m8p18c84b54i37f5vs9kvt6f.apps.googleusercontent.com
 function App() {
   
   
   return (
-    <GoogleOAuthProvider clientId="357070172721-psc9uchu79ptgs1e12d4gbnli96j29mj.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="725095508798-e72ej4f8m8p18c84b54i37f5vs9kvt6f.apps.googleusercontent.com">
       <div className='w-full h-screen '>
         <Toaster position='top-right'/>
         <Routes>

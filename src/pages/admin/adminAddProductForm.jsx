@@ -44,7 +44,10 @@ export default function AdminAddProductForm(){
 
         const imageUrls = await Promise.all(imageUploadPromises);
 
-        const altNamesArray = altNames.split(",")
+        const altNamesArray = altNames
+            .split(",")
+            .map(s => s.trim())
+            .filter(s => s.length > 0)
 
         console.log(altNamesArray)
 

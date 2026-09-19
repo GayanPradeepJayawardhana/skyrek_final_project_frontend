@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../utils/api";
 import LoadingScreen from "../components/loadingScreen";
 import ProductCard from "../components/productCard";
+import toast from "react-hot-toast";
 
 export default function ProductsPage(){
     const [products , setProducts] = useState([]);
@@ -18,24 +19,29 @@ export default function ProductsPage(){
             })
             .catch((error) => {
                 console.error("Error fetching products:", error);
+                toast.error("Failed to load products");
+                setProducts([]);
                 setLoading(false);
             });
         }
     }, [loading]);
 
     function searchProducts(){
+        if(query.trim() === ""){
+            setLoading(true);
+            return;
+        }
         setSearching(true);
         api.get("products/search/"+query).then((response) => {
-
             setProducts(response.data);
             setSearching(false);
-
         }).catch((error) => {
-
             console.error("Error searching products:", error);
+            toast.error("Search failed");
             setSearching(false);
         });
     }
+
     return(
         <div className="w-full bg-primary flex justify-center items-center gap-6 flex-wrap p-20">
             {
@@ -58,15 +64,18 @@ export default function ProductsPage(){
                 </button>
             </div>
             {
-                !loading && <>
-                    {
-                        products.map((product)=>{
-                            return (
-                                <ProductCard key={product.id} product={product} key={product.productId}/>
-                            )
-                        })
-                    }
-                </>
+                !loading && products.length === 0 && (
+                    <div className="w-full h-[200px] flex justify-center items-center text-gray-500 text-lg">
+                        No products found.
+                    </div>
+                )
+            }
+            {
+                !loading && products.map((product)=>{
+                    return (
+                        <ProductCard key={product.productId} product={product}/>
+                    )
+                })
             }
         </div>
     )

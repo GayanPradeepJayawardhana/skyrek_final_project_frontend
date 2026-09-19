@@ -1,28 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import uploadMedia from "../../utils/mediaUpload";
 import toast from "react-hot-toast";
 import api from "../../utils/api";
+
 export default function AdminEditProductForm(){
 
-    //get details transfered from previous page
     const location = useLocation()
-    const [productId, setProductId] = useState(location.state.productId);
-    const [name, setName] = useState(location.state.name);
-    const [altNames, setAltNames] = useState(location.state.altNames.join(","));
-    const [description, setDescription] = useState(location.state.description);
-    const [price, setPrice] = useState(location.state.price);
-    const [labelledPrice, setLabelledPrice] = useState(location.state.labelledPrice);
-    const [images, setImages] = useState([]);
-    const [isAvailable, setIsAvailable] = useState(location.state.isAvailable);
-    const [category, setCategory] = useState(location.state.category);
-    const [stock, setStock] = useState(location.state.stock);
-    const [brand, setBrand] = useState(location.state.brand);
-    const [model, setModel] = useState(location.state.model);
-    const [isLoading, setIsLoading] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
-    console.log(location);
+    // If someone lands here directly without state, send them back
+    useEffect(() => {
+        if (!location.state) {
+            toast.error("No product selected");
+            navigate("/admin/products");
+        }
+    }, [location.state, navigate]);
+
+    const [productId, setProductId] = useState(location.state?.productId || "");
+    const [name, setName] = useState(location.state?.name || "");
+    const [altNames, setAltNames] = useState(
+        (location.state?.altNames || []).join(",")
+    );
+    const [description, setDescription] = useState(location.state?.description || "");
+    const [price, setPrice] = useState(location.state?.price || "");
+    const [labelledPrice, setLabelledPrice] = useState(location.state?.labelledPrice || "");
+    const [images, setImages] = useState([]);
+    const [isAvailable, setIsAvailable] = useState(location.state?.isAvailable ?? true);
+    const [category, setCategory] = useState(location.state?.category || "");
+    const [stock, setStock] = useState(location.state?.stock || 0);
+    const [brand, setBrand] = useState(location.state?.brand || "");
+    const [model, setModel] = useState(location.state?.model || "");
+    const [isLoading, setIsLoading] = useState(false);
 
     async function editProduct(){
 
@@ -31,75 +40,60 @@ export default function AdminEditProductForm(){
         const token = localStorage.getItem("token");
 
         if(token == null){
-            toast.error("You must be logged in to add a product");
+            toast.error("You must be logged in to edit a product");
             navigate("/signin");
             return;
         }
 
-        
-    try{
-        const imageUploadPromises = []
+        try{
+            const imageUploadPromises = []
 
-        for(let i=0; i<images.length; i++){
+            for(let i=0; i<images.length; i++){
+                imageUploadPromises.push(uploadMedia(images[i]))
+            }
 
-            imageUploadPromises.push(uploadMedia(images[i]))
+            let imageUrls = await Promise.all(imageUploadPromises);
 
-        }
-        //imageUploadPromises -> [Promise1, Promise2, Promise3]
+            if(imageUrls.length == 0){
+                imageUrls = location.state.images;
+            }
 
-        let imageUrls = await Promise.all(imageUploadPromises);
+            const altNamesArray = altNames
+                .split(",")
+                .map(s => s.trim())
+                .filter(s => s.length > 0)
 
-        if(imageUrls.length == 0){
-            imageUrls = location.state.images;
-        }
+            const requestBody = {
+                name : name,
+                altNames : altNamesArray,
+                description : description,
+                price : price,
+                labelledPrice : labelledPrice,
+                images : imageUrls,
+                isAvailable : isAvailable,
+                category : category,
+                stock : stock,
+                brand : brand,
+                model : model
+            }
 
-        const altNamesArray = altNames.split(",")
-
-        console.log(altNamesArray)
-
-
-        const requestBody = {
-            name : name,
-            altNames : altNamesArray,
-            description : description,
-            price : price,
-            labelledPrice : labelledPrice,
-            images : imageUrls,
-            isAvailable : isAvailable,
-            category : category,
-            stock : stock,
-            brand : brand,
-            model : model
-        }
-
-        //backend
-        await api.put("/products/"+productId, requestBody , 
-            {
-                headers : {
-                    Authorization : "Bearer " + token
+            await api.put("/products/"+productId, requestBody ,
+                {
+                    headers : {
+                        Authorization : "Bearer " + token
+                    }
                 }
-            } 
-        )
+            )
 
-        toast.success("Product updated successfully");
-        navigate("/admin/products");
+            toast.success("Product updated successfully");
+            navigate("/admin/products");
 
-        setIsLoading(false);
-    }catch(error){
-        toast.error(error?.response?.data?.message || "Failed to update product");
-        setIsLoading(false);
+            setIsLoading(false);
+        }catch(error){
+            toast.error(error?.response?.data?.message || "Failed to update product");
+            setIsLoading(false);
+        }
     }
-
-
-        //images upload ["url1", "url2", "url3"]
-        //"headphone,headset,audio device"
-        //altNames -> ["headphone", "headset", "audio device"]
-
-        //json of a product send backend
-
-    }
-
-
 
     return(
         <div className="w-full h-full flex items-center flex-col">
@@ -113,7 +107,7 @@ export default function AdminEditProductForm(){
                     <button disabled={isLoading} className="save-btn" onClick={editProduct}>
                         {isLoading ? "Saving..." : "Save"}
                     </button>
-                </div>                
+                </div>
             </div>
             <div className="w-full  p-4 flex px-2 flex-wrap">
                 <div className="w-1/4 h-[70px] flex flex-col px-2 my-2">
@@ -141,13 +135,9 @@ export default function AdminEditProductForm(){
                     <textarea value={description} onChange={(e)=>setDescription(e.target.value)} className="w-full h-full border rounded-lg px-2" placeholder="Enter product description"/>
                 </div>
                 <div className="w-1/4 h-[70px] flex flex-col px-2 my-2">
-                    <label className="font-semibold">Images</label>
-                    <input multiple={true} onChange={(e)=>{setImages(e.target.files)}} type="file" className="w-full h-[40px] border rounded-lg px-2" placeholder="PD-001"/>
+                    <label className="font-semibold">Images <span className="italic text-sm text-gray-400">(leave empty to keep current)</span></label>
+                    <input multiple={true} onChange={(e)=>{setImages(e.target.files)}} type="file" className="w-full h-[40px] border rounded-lg px-2"/>
                 </div>
-                {/* <div className="w-1/4 h-[70px] flex flex-col px-2">
-                    <label className="font-semibold">Availability</label>
-                    <input type="checkbox" checked={isAvailable} onChange={(e)=>setIsAvailable(e.target.checked)} className="w-full h-[40px] border rounded-lg px-2" />
-                </div> */}
                 <div className="w-1/4 h-[70px] flex flex-col px-2 my-2">
                     <label className="font-semibold">Availability</label>
                     <select value={isAvailable} onChange={(e)=>{setIsAvailable(e.target.value)}} className="w-full h-[40px] border rounded-lg px-2">
@@ -172,7 +162,6 @@ export default function AdminEditProductForm(){
                         <option value="case">Case</option>
                         <option value="cooling">Cooling</option>
                         <option value="peripherals">Peripherals</option>
-                        {/* keybords mouse laptops others */}
                         <option value="keyboards">Keyboards</option>
                         <option value="mouse">Mouse</option>
                         <option value="laptops">Laptops</option>
@@ -207,5 +196,4 @@ export default function AdminEditProductForm(){
             </div>
         </div>
     )
-
 }

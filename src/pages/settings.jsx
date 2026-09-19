@@ -33,7 +33,7 @@ export default function Settings() {
 					setUser(null);
 				});
 		} else {
-			window.location.href = "/login";
+			window.location.href = "/signin";
 		}
 	}, []);
 
