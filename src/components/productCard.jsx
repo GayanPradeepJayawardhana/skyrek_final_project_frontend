@@ -23,9 +23,9 @@ export default function ProductCard({ product }) {
     const outOfStock = product.stock === 0;
 
     const imageSrc =
-        product.images && product.images.length > 0
-            ? product.images[0]
-            : "/default-product-1.png";
+    Array.isArray(product.images) && product.images.length > 0
+        ? product.images[0]
+        : "/default-product-1.png";
 
     // Load wishlist status on mount
     useEffect(() => {

@@ -14,6 +14,8 @@ export default function CartPage() {
     const [cart, setCart] = useState(getCart());
     const navigate = useNavigate();
 
+    const safeCart = Array.isArray(cart) ? cart : [];
+
     function requireLogin(nextPath) {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -26,10 +28,10 @@ export default function CartPage() {
 
     function handleCheckout() {
         if (!requireLogin("/checkout")) return;
-        navigate("/checkout", { state: cart });
+        navigate("/checkout", { state: safeCart });
     }
 
-    if (cart.length === 0) {
+    if (safeCart.length === 0) {
         return (
             <div className="w-full min-h-full bg-primary flex items-center justify-center p-6">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -62,23 +64,20 @@ export default function CartPage() {
                         Shopping Cart
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        {cart.reduce((sum, item) => sum + item.qty, 0)} items
+                        {safeCart.reduce((sum, item) => sum + item.qty, 0)} items
                         in your cart
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* ===== ITEMS ===== */}
                     <div className="lg:col-span-2 flex flex-col gap-4">
-                        {cart.map((cartItem, index) => {
+                        {safeCart.map((cartItem, index) => {
                             const lineTotal =
                                 cartItem.product.price * cartItem.qty;
 
                             return (
                                 <div
-                                    key={
-                                        cartItem.product.productId || index
-                                    }
+                                    key={cartItem.product.productId || index}
                                     className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative"
                                 >
                                     <div className="flex flex-col sm:flex-row">
@@ -99,10 +98,7 @@ export default function CartPage() {
                                             <div>
                                                 <div className="flex items-start justify-between gap-3">
                                                     <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 flex-1">
-                                                        {
-                                                            cartItem.product
-                                                                .name
-                                                        }
+                                                        {cartItem.product.name}
                                                     </h3>
                                                     <button
                                                         onClick={() => {
@@ -121,8 +117,7 @@ export default function CartPage() {
                                                 <div className="flex items-baseline gap-2 mt-2">
                                                     <span className="text-accent font-bold">
                                                         {getFormattedPrice(
-                                                            cartItem.product
-                                                                .price
+                                                            cartItem.product.price
                                                         )}
                                                     </span>
                                                     {cartItem.product
@@ -131,8 +126,7 @@ export default function CartPage() {
                                                             .price && (
                                                         <span className="text-xs text-gray-400 line-through">
                                                             {getFormattedPrice(
-                                                                cartItem
-                                                                    .product
+                                                                cartItem.product
                                                                     .labelledPrice
                                                             )}
                                                         </span>
@@ -189,7 +183,6 @@ export default function CartPage() {
                         })}
                     </div>
 
-                    {/* ===== SUMMARY ===== */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-800 mb-5">
@@ -201,7 +194,7 @@ export default function CartPage() {
                                     Total
                                 </span>
                                 <span className="text-2xl font-bold text-accent">
-                                    {getFormattedPrice(getTotal(cart))}
+                                    {getFormattedPrice(getTotal(safeCart))}
                                 </span>
                             </div>
 

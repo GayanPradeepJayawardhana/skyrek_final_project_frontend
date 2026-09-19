@@ -39,16 +39,21 @@ export default function CheckoutPage() {
         return [];
     });
 
+    const safeCart = Array.isArray(cart) ? cart : [];
+
     useEffect(() => {
-        if (cart.length > 0) {
-            sessionStorage.setItem("checkoutCart", JSON.stringify(cart));
+        if (safeCart.length > 0) {
+            sessionStorage.setItem(
+                "checkoutCart",
+                JSON.stringify(safeCart)
+            );
         } else {
             sessionStorage.removeItem("checkoutCart");
         }
-    }, [cart]);
+    }, [safeCart]);
 
     // Empty state
-    if (cart.length === 0) {
+    if (safeCart.length === 0) {
         return (
             <div className="w-full min-h-full bg-primary flex items-center justify-center p-6">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -73,14 +78,13 @@ export default function CheckoutPage() {
         );
     }
 
-    const subtotal = getTotal(cart);
+    const subtotal = getTotal(safeCart);
     const shipping = 0;
     const total = subtotal + shipping;
 
     return (
         <div className="w-full min-h-full bg-primary pb-24 lg:pb-12">
             <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 lg:py-10">
-                {/* Header */}
                 <div className="mb-8">
                     <button
                         onClick={() => navigate("/cart")}
@@ -98,17 +102,14 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* ===== ITEMS LIST ===== */}
                     <div className="lg:col-span-2 flex flex-col gap-4">
-                        {cart.map((cartItem, index) => {
+                        {safeCart.map((cartItem, index) => {
                             const lineTotal =
                                 cartItem.product.price * cartItem.qty;
 
                             return (
                                 <div
-                                    key={
-                                        cartItem.product.productId || index
-                                    }
+                                    key={cartItem.product.productId || index}
                                     className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
                                 >
                                     <div className="flex flex-col sm:flex-row">
@@ -133,8 +134,7 @@ export default function CheckoutPage() {
                                                 <div className="flex items-baseline gap-2 mt-2">
                                                     <span className="text-accent font-bold">
                                                         {getFormattedPrice(
-                                                            cartItem.product
-                                                                .price
+                                                            cartItem.product.price
                                                         )}
                                                     </span>
                                                     {cartItem.product
@@ -143,8 +143,7 @@ export default function CheckoutPage() {
                                                             .price && (
                                                         <span className="text-xs text-gray-400 line-through">
                                                             {getFormattedPrice(
-                                                                cartItem
-                                                                    .product
+                                                                cartItem.product
                                                                     .labelledPrice
                                                             )}
                                                         </span>
@@ -153,12 +152,11 @@ export default function CheckoutPage() {
                                             </div>
 
                                             <div className="flex items-center justify-between mt-4">
-                                                {/* Qty */}
                                                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                                                     <button
                                                         onClick={() => {
                                                             const newCart = [
-                                                                ...cart,
+                                                                ...safeCart,
                                                             ];
                                                             const newQty =
                                                                 newCart[index]
@@ -166,11 +164,8 @@ export default function CheckoutPage() {
                                                             if (newQty > 0) {
                                                                 newCart[
                                                                     index
-                                                                ].qty =
-                                                                    newQty;
-                                                                setCart(
-                                                                    newCart
-                                                                );
+                                                                ].qty = newQty;
+                                                                setCart(newCart);
                                                             }
                                                         }}
                                                         className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
@@ -183,11 +178,9 @@ export default function CheckoutPage() {
                                                     <button
                                                         onClick={() => {
                                                             const newCart = [
-                                                                ...cart,
+                                                                ...safeCart,
                                                             ];
-                                                            newCart[
-                                                                index
-                                                            ].qty =
+                                                            newCart[index].qty =
                                                                 newCart[index]
                                                                     .qty + 1;
                                                             setCart(newCart);
@@ -198,7 +191,6 @@ export default function CheckoutPage() {
                                                     </button>
                                                 </div>
 
-                                                {/* Line total */}
                                                 <div className="text-right">
                                                     <div className="text-[10px] text-gray-400 uppercase tracking-wide">
                                                         Subtotal
@@ -217,7 +209,6 @@ export default function CheckoutPage() {
                         })}
                     </div>
 
-                    {/* ===== ORDER SUMMARY ===== */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-800 mb-5">
@@ -228,7 +219,7 @@ export default function CheckoutPage() {
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-500">
                                         Subtotal (
-                                        {cart.reduce(
+                                        {safeCart.reduce(
                                             (sum, item) => sum + item.qty,
                                             0
                                         )}{" "}
@@ -257,9 +248,8 @@ export default function CheckoutPage() {
                                 </span>
                             </div>
 
-                            <CreateOrder cart={cart} />
+                            <CreateOrder cart={safeCart} />
 
-                            {/* Trust badges */}
                             <div className="mt-5 pt-5 border-t border-gray-100 flex flex-col gap-3">
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                     <FiShield

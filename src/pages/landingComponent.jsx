@@ -22,11 +22,12 @@ export default function LandingPage() {
     useEffect(() => {
         api.get("/products")
             .then((res) => {
-                // Take first 4 products as featured
-                setFeaturedProducts(res.data.slice(0, 4));
+                const list = Array.isArray(res.data) ? res.data : [];
+                setFeaturedProducts(list.slice(0, 4));
                 setLoading(false);
             })
-            .catch(() => {
+            .catch((err) => {
+                console.error("Failed to load featured products:", err);
                 setFeaturedProducts([]);
                 setLoading(false);
             });
@@ -403,12 +404,16 @@ export default function LandingPage() {
                                 >
                                     <div className="relative w-full h-52 overflow-hidden bg-gray-50">
                                         <img
-                                            src={product.images[0]}
+                                            src={
+                                                Array.isArray(product.images) &&
+                                                product.images.length > 0
+                                                    ? product.images[0]
+                                                    : "/default-product-1.png"
+                                            }
                                             alt={product.name}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             onError={(e) => {
-                                                e.target.src =
-                                                    "/default-product-1.png";
+                                                e.target.src = "/default-product-1.png";
                                             }}
                                         />
                                         {product.price <

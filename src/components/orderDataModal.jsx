@@ -344,12 +344,12 @@ export default function AdminOrderDataModal({ order, refresh, isAdmin }) {
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">
-                                        Items ({order.items.length})
+                                        Items ({order.items?.length || 0})
                                     </h3>
                                 </div>
 
                                 <div className="flex flex-col gap-3">
-                                    {order.items.map((item, index) => (
+                                    {(order.items || []).map((item, index) => (
                                         <div
                                             key={index}
                                             className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border border-gray-100"
