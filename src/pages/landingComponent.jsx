@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
 import getFormattedPrice from "../utils/price-formatter";
+import FeedbackSection from "../components/FeedbackSection";
 import {
     FiArrowRight,
     FiTruck,
@@ -477,7 +478,8 @@ export default function LandingPage() {
                     )}
                 </div>
             </section>
-
+            {/* ================= FEEDBACK ================= */}
+            <FeedbackSection />
             {/* ================= CTA BANNER ================= */}
             <section className="w-full bg-primary pb-16 lg:pb-20">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">

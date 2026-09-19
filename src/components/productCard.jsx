@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import getFormattedPrice from "../utils/price-formatter";
+import StarRating from "./StarRating";
 import { FiShoppingBag } from "react-icons/fi";
 
 export default function ProductCard({ product }) {
@@ -23,7 +24,6 @@ export default function ProductCard({ product }) {
             to={"/overview/" + product.productId}
             className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
         >
-            {/* Image */}
             <div className="relative w-full h-52 overflow-hidden bg-gray-50">
                 <img
                     src={imageSrc}
@@ -35,21 +35,18 @@ export default function ProductCard({ product }) {
                     }}
                 />
 
-                {/* Discount badge */}
                 {hasDiscount && !outOfStock && (
                     <span className="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-md">
                         {discountPercent}% OFF
                     </span>
                 )}
 
-                {/* Brand chip */}
                 {product.brand && (
                     <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 backdrop-blur-sm text-gray-700 text-[10px] font-semibold uppercase tracking-wide rounded-full shadow-sm">
                         {product.brand}
                     </span>
                 )}
 
-                {/* Out of stock overlay */}
                 {outOfStock && (
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
                         <span className="text-white font-semibold text-sm px-4 py-2 bg-black/70 rounded-lg">
@@ -58,7 +55,6 @@ export default function ProductCard({ product }) {
                     </div>
                 )}
 
-                {/* Hover overlay CTA */}
                 {!outOfStock && (
                     <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent p-3">
                         <span className="inline-flex items-center gap-1.5 text-white text-xs font-semibold">
@@ -69,7 +65,6 @@ export default function ProductCard({ product }) {
                 )}
             </div>
 
-            {/* Content */}
             <div className="p-5 flex flex-col flex-1">
                 <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
                     {product.category || "Product"}
@@ -79,7 +74,24 @@ export default function ProductCard({ product }) {
                     {product.name}
                 </h3>
 
-                {/* Price */}
+                {/* Rating */}
+                {product.reviewCount > 0 ? (
+                    <div className="mt-2 flex items-center gap-2">
+                        <StarRating
+                            value={product.avgRating || 0}
+                            size={12}
+                        />
+                        <span className="text-[11px] text-gray-500">
+                            {Number(product.avgRating || 0).toFixed(1)} (
+                            {product.reviewCount})
+                        </span>
+                    </div>
+                ) : (
+                    <div className="mt-2 text-[11px] text-gray-400">
+                        No reviews yet
+                    </div>
+                )}
+
                 <div className="mt-3 flex items-baseline gap-2 flex-wrap">
                     <span className="text-accent font-bold text-base">
                         {getFormattedPrice(product.price)}
@@ -91,7 +103,6 @@ export default function ProductCard({ product }) {
                     )}
                 </div>
 
-                {/* Stock chip */}
                 {!outOfStock && product.stock <= 5 && (
                     <div className="mt-2">
                         <span className="inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-semibold">

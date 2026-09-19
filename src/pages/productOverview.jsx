@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../utils/api";
 import ProductImageSlideShow from "../components/productImageSlideShow";
+import StarRating from "../components/StarRating";
+import ReviewSection from "../components/ReviewSection";
 import getFormattedPrice from "../utils/price-formatter";
 import { addToCart } from "../utils/cart";
 import toast from "react-hot-toast";
@@ -42,18 +44,30 @@ export default function ProductOverview() {
             });
     }, [productId, navigate]);
 
+    function requireLogin() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            toast.error("Please login to continue");
+            navigate("/signin", {
+                state: { redirectTo: `/overview/${productId}` },
+            });
+            return false;
+        }
+        return true;
+    }
+
     function handleAddToCart() {
+        if (!requireLogin()) return;
         setAdding(true);
         addToCart(product, qty);
         toast.success(
-            qty === 1
-                ? "Added to cart"
-                : `${qty} items added to cart`
+            qty === 1 ? "Added to cart" : `${qty} items added to cart`
         );
         setTimeout(() => setAdding(false), 500);
     }
 
     function handleBuyNow() {
+        if (!requireLogin()) return;
         navigate("/checkout", {
             state: [
                 {
@@ -68,6 +82,15 @@ export default function ProductOverview() {
                 },
             ],
         });
+    }
+
+    // Called by ReviewSection when a review is added/removed
+    function handleRatingChange(newAvg, newCount) {
+        setProduct((prev) => ({
+            ...prev,
+            avgRating: newAvg,
+            reviewCount: newCount,
+        }));
     }
 
     if (loading) {
@@ -98,19 +121,13 @@ export default function ProductOverview() {
     return (
         <div className="w-full min-h-full bg-primary pb-24 lg:pb-12">
             <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-10">
-                {/* ===== BREADCRUMB ===== */}
+                {/* Breadcrumb */}
                 <nav className="flex items-center gap-2 text-xs text-gray-500 mb-6">
-                    <Link
-                        to="/"
-                        className="hover:text-accent transition-colors"
-                    >
+                    <Link to="/" className="hover:text-accent">
                         Home
                     </Link>
                     <FiChevronRight size={12} />
-                    <Link
-                        to="/products"
-                        className="hover:text-accent transition-colors"
-                    >
+                    <Link to="/products" className="hover:text-accent">
                         Products
                     </Link>
                     <FiChevronRight size={12} />
@@ -119,17 +136,16 @@ export default function ProductOverview() {
                     </span>
                 </nav>
 
-                {/* ===== MAIN CARD ===== */}
+                {/* MAIN CARD */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                        {/* ===== IMAGE PANEL ===== */}
+                        {/* IMAGE */}
                         <div className="p-6 lg:p-10 bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
                             <ProductImageSlideShow images={product.images} />
                         </div>
 
-                        {/* ===== DETAILS PANEL ===== */}
+                        {/* DETAILS */}
                         <div className="p-6 lg:p-10 flex flex-col">
-                            {/* Badges */}
                             <div className="flex items-center gap-2 mb-4 flex-wrap">
                                 {product.brand && (
                                     <span className="px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wide">
@@ -148,17 +164,41 @@ export default function ProductOverview() {
                                 )}
                             </div>
 
-                            {/* Product ID */}
                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                                 SKU: {product.productId}
                             </div>
 
-                            {/* Name */}
                             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight mb-3">
                                 {product.name}
                             </h1>
 
-                            {/* Alt names */}
+                            {/* Rating summary under title */}
+                            {product.reviewCount > 0 ? (
+                                <div className="flex items-center gap-3 mb-3">
+                                    <StarRating
+                                        value={product.avgRating || 0}
+                                        size={16}
+                                    />
+                                    <span className="text-sm font-semibold text-gray-700">
+                                        {Number(
+                                            product.avgRating || 0
+                                        ).toFixed(1)}
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                        ({product.reviewCount}{" "}
+                                        {product.reviewCount === 1
+                                            ? "review"
+                                            : "reviews"}
+                                        )
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 mb-3 text-xs text-gray-400">
+                                    <StarRating value={0} size={14} />
+                                    <span>No reviews yet</span>
+                                </div>
+                            )}
+
                             {product.altNames &&
                                 product.altNames.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mb-5">
@@ -175,7 +215,7 @@ export default function ProductOverview() {
                                     </div>
                                 )}
 
-                            {/* Price block */}
+                            {/* Price */}
                             <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-gray-100">
                                 <span className="text-3xl lg:text-4xl font-bold text-accent">
                                     {getFormattedPrice(product.price)}
@@ -208,7 +248,7 @@ export default function ProductOverview() {
                                 </p>
                             </div>
 
-                            {/* Stock status */}
+                            {/* Stock */}
                             <div className="mb-6">
                                 {outOfStock ? (
                                     <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-700 text-sm font-medium">
@@ -218,7 +258,7 @@ export default function ProductOverview() {
                                 ) : product.stock <= 5 ? (
                                     <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 text-sm font-medium">
                                         <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                        Only {product.stock} left in stock
+                                        Only {product.stock} left
                                     </div>
                                 ) : (
                                     <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-medium">
@@ -228,10 +268,9 @@ export default function ProductOverview() {
                                 )}
                             </div>
 
-                            {/* Quantity + Actions */}
+                            {/* Qty + Actions */}
                             {!outOfStock && (
                                 <div className="flex flex-col gap-4 mt-auto">
-                                    {/* Qty selector */}
                                     <div className="flex items-center gap-4">
                                         <span className="text-sm font-medium text-gray-700">
                                             Quantity:
@@ -244,7 +283,7 @@ export default function ProductOverview() {
                                                     )
                                                 }
                                                 disabled={qty <= 1}
-                                                className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg"
+                                                className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 text-lg"
                                             >
                                                 −
                                             </button>
@@ -263,7 +302,7 @@ export default function ProductOverview() {
                                                 disabled={
                                                     qty >= product.stock
                                                 }
-                                                className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg"
+                                                className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 text-lg"
                                             >
                                                 +
                                             </button>
@@ -273,7 +312,6 @@ export default function ProductOverview() {
                                         </span>
                                     </div>
 
-                                    {/* Buttons */}
                                     <div className="flex flex-col sm:flex-row gap-3">
                                         <button
                                             onClick={handleAddToCart}
@@ -287,7 +325,7 @@ export default function ProductOverview() {
                                         </button>
                                         <button
                                             onClick={handleBuyNow}
-                                            className="flex-1 inline-flex items-center justify-center gap-2 h-[52px] px-6 rounded-xl bg-accent text-white font-semibold text-sm hover:bg-accent-hover transition-all shadow-lg shadow-accent/20 hover:shadow-xl hover:-translate-y-0.5"
+                                            className="flex-1 inline-flex items-center justify-center gap-2 h-[52px] px-6 rounded-xl bg-accent text-white font-semibold text-sm hover:bg-accent-hover transition-all shadow-lg shadow-accent/20 hover:-translate-y-0.5"
                                         >
                                             <FiPackage size={18} />
                                             Buy Now
@@ -300,7 +338,7 @@ export default function ProductOverview() {
                                 <div className="mt-auto">
                                     <button
                                         disabled
-                                        className="w-full inline-flex items-center justify-center gap-2 h-[52px] px-6 rounded-xl bg-gray-200 text-gray-500 font-semibold text-sm cursor-not-allowed"
+                                        className="w-full inline-flex items-center justify-center gap-2 h-[52px] rounded-xl bg-gray-200 text-gray-500 font-semibold text-sm cursor-not-allowed"
                                     >
                                         Currently Unavailable
                                     </button>
@@ -310,7 +348,7 @@ export default function ProductOverview() {
                     </div>
                 </div>
 
-                {/* ===== TRUST BAR ===== */}
+                {/* TRUST BAR */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                     {[
                         {
@@ -355,6 +393,12 @@ export default function ProductOverview() {
                         </div>
                     ))}
                 </div>
+
+                {/* ============ REVIEWS ============ */}
+                <ReviewSection
+                    productId={product.productId}
+                    onRatingChange={handleRatingChange}
+                />
             </div>
         </div>
     );

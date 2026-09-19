@@ -10,7 +10,6 @@ import {
     FiUser,
     FiSettings,
 } from "react-icons/fi";
-import toast from "react-hot-toast";
 
 const routeTitles = {
     "/admin/dashboard": "Dashboard",
@@ -18,6 +17,8 @@ const routeTitles = {
     "/admin/products": "Products",
     "/admin/users": "Users",
     "/admin/contact-messages": "Contact Messages",
+    "/admin/reviews": "Product Reviews",
+    "/admin/feedback": "Website Feedback",
     "/admin/add-product": "Add Product",
     "/admin/edit-product": "Edit Product",
     "/admin/profile": "My Profile",
@@ -33,20 +34,17 @@ export default function AdminHeader({ user, onLogout }) {
 
     const pageTitle = routeTitles[location.pathname] || "Admin";
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setMenuOpen(false);
             }
         }
-
         document.addEventListener("mousedown", handleClickOutside);
         return () =>
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Close dropdown on route change
     useEffect(() => {
         setMenuOpen(false);
     }, [location.pathname]);
@@ -57,8 +55,8 @@ export default function AdminHeader({ user, onLogout }) {
     }
 
     return (
-        <header className="w-full h-[80px] bg-white border-b border-gray-100 flex items-center justify-between px-6 shadow-sm">
-            {/* Left: Breadcrumb + Title */}
+        <header className="w-full h-[80px] bg-white border-b border-gray-100 flex items-center justify-between px-6">
+            {/* ===== LEFT: BREADCRUMB + TITLE ===== */}
             <div className="flex flex-col">
                 <div className="flex items-center gap-2 text-xs text-gray-400">
                     <Link
@@ -76,8 +74,8 @@ export default function AdminHeader({ user, onLogout }) {
                 </h1>
             </div>
 
-            {/* Right: Search, notifications, profile menu */}
-            <div className="flex items-center gap-3">
+            {/* ===== RIGHT: SEARCH + NOTIFICATIONS + PROFILE ===== */}
+            <div className="flex items-center gap-2">
                 {/* Search */}
                 <div
                     className={`relative transition-all duration-300 ${
@@ -86,7 +84,8 @@ export default function AdminHeader({ user, onLogout }) {
                 >
                     <button
                         onClick={() => setShowSearch(!showSearch)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-accent rounded-lg transition-colors"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-accent hover:bg-gray-50 rounded-xl transition-colors"
+                        title="Search"
                     >
                         <FiSearch size={18} />
                     </button>
@@ -94,7 +93,7 @@ export default function AdminHeader({ user, onLogout }) {
                         <input
                             type="text"
                             placeholder="Search orders, products, users..."
-                            className="w-full h-[40px] pl-12 pr-3 rounded-lg border border-gray-200 focus:border-accent focus:outline-none text-sm"
+                            className="w-full h-[42px] pl-12 pr-3 rounded-xl border border-gray-200 bg-white focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none text-sm transition-all"
                             autoFocus
                         />
                     )}
@@ -102,7 +101,7 @@ export default function AdminHeader({ user, onLogout }) {
 
                 {/* Notifications */}
                 <button
-                    className="relative w-[40px] h-[40px] flex items-center justify-center text-gray-400 hover:text-accent hover:bg-accent-light rounded-lg transition-all"
+                    className="relative w-10 h-10 flex items-center justify-center text-gray-400 hover:text-accent hover:bg-gray-50 rounded-xl transition-colors"
                     title="Notifications"
                 >
                     <FiBell size={18} />
@@ -113,12 +112,12 @@ export default function AdminHeader({ user, onLogout }) {
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
-                        className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="flex items-center gap-2 pl-1 pr-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
                     >
                         <img
                             src={user?.image || "/default-profile.png"}
                             alt="Profile"
-                            className="w-8 h-8 rounded-full object-cover border-2 border-accent-light"
+                            className="w-9 h-9 rounded-full object-cover border-2 border-accent/20"
                             onError={(e) => {
                                 e.target.src = "/default-profile.png";
                             }}
@@ -140,10 +139,10 @@ export default function AdminHeader({ user, onLogout }) {
                     </button>
 
                     {menuOpen && (
-                        <div className="absolute right-0 top-[56px] w-[240px] bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-slide-in">
+                        <div className="absolute right-0 top-[calc(100%+8px)] w-[240px] bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 animate-slide-in overflow-hidden">
                             {/* User info header */}
                             <div className="px-4 py-3 border-b border-gray-100">
-                                <div className="text-sm font-semibold text-gray-800">
+                                <div className="text-sm font-semibold text-gray-800 truncate">
                                     {user?.firstName} {user?.lastName}
                                 </div>
                                 <div className="text-xs text-gray-400 truncate">
@@ -156,7 +155,7 @@ export default function AdminHeader({ user, onLogout }) {
                                 <Link
                                     to="/admin/profile"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
                                     <FiUser size={16} />
                                     My Profile
@@ -165,7 +164,7 @@ export default function AdminHeader({ user, onLogout }) {
                                 <Link
                                     to="/admin/settings"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
                                     <FiSettings size={16} />
                                     Admin Settings
@@ -176,7 +175,7 @@ export default function AdminHeader({ user, onLogout }) {
                             <div className="border-t border-gray-100 pt-1">
                                 <button
                                     onClick={handleLogoutClick}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left font-medium"
                                 >
                                     <FiLogOut size={16} />
                                     Logout

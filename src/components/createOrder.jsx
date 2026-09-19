@@ -44,6 +44,19 @@ export default function CreateOrder({ cart }) {
         };
     }, [isModalOpen]);
 
+    // ============ AUTH GUARD ============
+    function openModal() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            toast.error("Please login to place an order");
+            navigate("/signin", { state: { redirectTo: "/checkout" } });
+            return;
+        }
+
+        setIsModalOpen(true);
+    }
+
     async function placeOrder() {
         if (!firstName || !lastName || !addressLine1 || !city || !phone) {
             toast.error("Please fill in all required fields");
@@ -80,7 +93,9 @@ export default function CreateOrder({ cart }) {
 
             if (!token) {
                 toast.error("Please login to place an order");
-                navigate("/signin");
+                navigate("/signin", {
+                    state: { redirectTo: "/checkout" },
+                });
                 return;
             }
 
@@ -91,7 +106,6 @@ export default function CreateOrder({ cart }) {
             console.log(response.data);
             toast.success("Order placed successfully!");
 
-            // Clear cart
             localStorage.setItem("cart", "[]");
             sessionStorage.removeItem("checkoutCart");
 
@@ -112,7 +126,7 @@ export default function CreateOrder({ cart }) {
     return (
         <>
             <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={openModal}
                 className="w-full h-[52px] rounded-xl bg-accent text-white font-semibold text-sm hover:bg-accent-hover transition-all shadow-lg shadow-accent/20 hover:shadow-xl hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
             >
                 <FiHome size={16} />
@@ -150,7 +164,6 @@ export default function CreateOrder({ cart }) {
                         {/* Form */}
                         <div className="p-6 max-h-[70vh] overflow-y-auto">
                             <div className="flex flex-col gap-4">
-                                {/* Names */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
@@ -199,7 +212,6 @@ export default function CreateOrder({ cart }) {
                                     </div>
                                 </div>
 
-                                {/* Address */}
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                                         Address Line 1 *
@@ -249,7 +261,6 @@ export default function CreateOrder({ cart }) {
                                     </div>
                                 </div>
 
-                                {/* City + Phone */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">

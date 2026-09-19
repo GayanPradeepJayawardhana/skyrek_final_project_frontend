@@ -5,7 +5,6 @@ import {
     FiLogIn,
     FiUserPlus,
     FiChevronDown,
-    FiUser,
     FiShoppingBag,
     FiSettings,
     FiLogOut,
@@ -23,15 +22,10 @@ export default function UserData() {
         const token = localStorage.getItem("token");
 
         if (token != null) {
-            api
-                .get("/users/me", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                })
-                .then((res) => {
-                    setUser(res.data);
-                })
+            api.get("/users/me", {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+                .then((res) => setUser(res.data))
                 .catch((err) => {
                     console.log(err);
                     setUser(null);
@@ -51,20 +45,13 @@ export default function UserData() {
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Mobile select handler
     function handleSelectChange(e) {
         const value = e.target.value;
         setSelectedOption(value);
 
-        if (value === "settings") {
-            navigate("/settings");
-        }
-        if (value === "my-orders") {
-            navigate("/my-orders");
-        }
-        if (value === "logout") {
-            handleLogout();
-        }
+        if (value === "settings") navigate("/settings");
+        if (value === "my-orders") navigate("/my-orders");
+        if (value === "logout") handleLogout();
 
         setSelectedOption("me");
     }
@@ -87,11 +74,11 @@ export default function UserData() {
         <>
             {user == null ? (
                 <>
-                    {/* ===== DESKTOP BUTTONS ===== */}
+                    {/* ===== DESKTOP: LOGIN + REGISTER ===== */}
                     <div className="hidden lg:flex items-center gap-3">
                         <Link
                             to="/signin"
-                            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/30 text-white font-medium text-sm hover:bg-white/10 hover:border-white/50 transition-all backdrop-blur-sm"
+                            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white/90 font-medium text-sm hover:text-white transition-colors"
                         >
                             <FiLogIn
                                 size={16}
@@ -112,7 +99,7 @@ export default function UserData() {
                         </Link>
                     </div>
 
-                    {/* ===== MOBILE BUTTON ===== */}
+                    {/* ===== MOBILE LOGIN ===== */}
                     <Link
                         to="/signin"
                         className="h-full lg:hidden flex flex-col justify-center items-center text-accent text-3xl"
@@ -123,41 +110,41 @@ export default function UserData() {
                 </>
             ) : (
                 <div className="relative" ref={menuRef}>
-                    {/* ===== USER PROFILE TRIGGER (desktop) ===== */}
+                    {/* ===== DESKTOP TRIGGER — matches admin header ===== */}
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
-                        className="hidden lg:flex items-center gap-3 pl-1 pr-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all cursor-pointer"
+                        className="hidden lg:flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
                     >
                         <img
                             src={user.image || "/default-profile.png"}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white/40"
                             alt="Profile"
+                            className="w-8 h-8 rounded-full object-cover border-2 border-white/30"
                             onError={(e) => {
                                 e.target.src = "/default-profile.png";
                             }}
                         />
-                        <div className="flex flex-col items-start">
-                            <span className="text-white text-sm font-semibold leading-tight">
+                        <div className="hidden lg:flex flex-col items-start">
+                            <span className="text-sm font-semibold text-white leading-tight">
                                 {user.firstName}
                             </span>
-                            <span className="text-white/60 text-xs leading-tight">
+                            <span className="text-xs text-white/60 leading-tight">
                                 {user.isAdmin ? "Admin" : "Customer"}
                             </span>
                         </div>
                         <FiChevronDown
                             size={14}
                             className={`text-white/60 transition-transform ${
-                                menuOpen ? "rotate-180 text-white" : ""
+                                menuOpen ? "rotate-180" : ""
                             }`}
                         />
                     </button>
 
                     {/* ===== DESKTOP DROPDOWN ===== */}
                     {menuOpen && (
-                        <div className="hidden lg:block absolute right-0 top-[calc(100%+8px)] w-[240px] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-slide-in">
-                            {/* User info */}
+                        <div className="hidden lg:block absolute right-0 top-[56px] w-[240px] bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-slide-in">
+                            {/* User info header */}
                             <div className="px-4 py-3 border-b border-gray-100">
-                                <div className="text-sm font-semibold text-gray-800 truncate">
+                                <div className="text-sm font-semibold text-gray-800">
                                     {user.firstName} {user.lastName}
                                 </div>
                                 <div className="text-xs text-gray-400 truncate">
@@ -169,23 +156,17 @@ export default function UserData() {
                             <div className="py-1">
                                 <button
                                     onClick={() => goTo("/my-orders")}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
                                 >
-                                    <FiShoppingBag
-                                        size={16}
-                                        className="text-gray-400"
-                                    />
+                                    <FiShoppingBag size={16} />
                                     My Orders
                                 </button>
 
                                 <button
                                     onClick={() => goTo("/settings")}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
                                 >
-                                    <FiSettings
-                                        size={16}
-                                        className="text-gray-400"
-                                    />
+                                    <FiSettings size={16} />
                                     Settings
                                 </button>
                             </div>
@@ -194,7 +175,7 @@ export default function UserData() {
                             <div className="border-t border-gray-100 pt-1">
                                 <button
                                     onClick={handleLogout}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left font-medium"
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
                                 >
                                     <FiLogOut size={16} />
                                     Logout
@@ -203,18 +184,18 @@ export default function UserData() {
                         </div>
                     )}
 
-                    {/* ===== MOBILE DROPDOWN ===== */}
-                    <div className="lg:hidden text-white flex flex-col justify-center items-center gap-1">
+                    {/* ===== MOBILE TRIGGER ===== */}
+                    <div className="lg:hidden text-accent flex flex-col justify-center items-center gap-0.5">
                         <img
                             src={user.image || "/default-profile.png"}
-                            className="w-6 h-6 rounded-full object-cover border border-accent"
+                            className="w-7 h-7 rounded-full object-cover border-2 border-accent"
                             alt="Profile"
                             onError={(e) => {
                                 e.target.src = "/default-profile.png";
                             }}
                         />
                         <select
-                            className="bg-transparent text-xs text-accent text-center cursor-pointer focus:outline-none"
+                            className="bg-transparent text-[11px] text-accent font-semibold text-center cursor-pointer focus:outline-none max-w-[60px] truncate"
                             value={selectedOption}
                             onChange={handleSelectChange}
                         >
