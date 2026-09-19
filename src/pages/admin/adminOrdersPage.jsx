@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../utils/api";
+import api from "../. ./utils/api";
 import LoadingScreen from "../../components/loadingScreen";
 import getFormattedPrice from "../../utils/price-formatter";
 import formatTimestamp from "../../utils/date-formatter";
@@ -10,8 +10,8 @@ import {
     FiClock,
     FiPackage,
     FiMail,
-    FiUser,
     FiMapPin,
+    FiAlertTriangle,
 } from "react-icons/fi";
 
 const STATUS_STYLES = {
@@ -19,6 +19,8 @@ const STATUS_STYLES = {
     Processing: "bg-blue-50 text-blue-700 border-blue-100",
     Shipped: "bg-violet-50 text-violet-700 border-violet-100",
     Delivered: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    Cancelled: "bg-red-50 text-red-700 border-red-100",
+    "Cancel Requested": "bg-orange-50 text-orange-700 border-orange-100",
 };
 
 export default function AdminOrdersPage() {
@@ -56,6 +58,10 @@ export default function AdminOrdersPage() {
         }
     }, [loading, pageNumber, pageSize]);
 
+    const cancelRequestedCount = orders.filter(
+        (o) => o.status === "Cancel Requested"
+    ).length;
+
     return (
         <div className="w-full flex flex-col gap-6">
             {/* ================= HERO ================= */}
@@ -83,6 +89,17 @@ export default function AdminOrdersPage() {
                             </p>
                         </div>
                     </div>
+
+                    {cancelRequestedCount > 0 && (
+                        <div className="inline-flex items-center gap-2 px-4 h-[44px] rounded-xl bg-orange-500/20 backdrop-blur-sm border border-orange-300/30 text-white text-sm font-semibold">
+                            <FiAlertTriangle
+                                size={16}
+                                className="text-orange-300"
+                            />
+                            {cancelRequestedCount} cancel request
+                            {cancelRequestedCount !== 1 ? "s" : ""} pending
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -110,11 +127,17 @@ export default function AdminOrdersPage() {
                         const statusStyle =
                             STATUS_STYLES[order.status] ||
                             STATUS_STYLES.Pending;
+                        const isCancelRequested =
+                            order.status === "Cancel Requested";
 
                         return (
                             <div
                                 key={order.orderId}
-                                className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all overflow-hidden"
+                                className={`bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-all ${
+                                    isCancelRequested
+                                        ? "border-orange-200 ring-2 ring-orange-100"
+                                        : "border-gray-100 hover:border-gray-200"
+                                }`}
                             >
                                 <div className="p-5 lg:p-6">
                                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -134,6 +157,11 @@ export default function AdminOrdersPage() {
                                                     <span
                                                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${statusStyle}`}
                                                     >
+                                                        {isCancelRequested && (
+                                                            <FiAlertTriangle
+                                                                size={10}
+                                                            />
+                                                        )}
                                                         {order.status}
                                                     </span>
                                                 </div>
@@ -157,6 +185,25 @@ export default function AdminOrdersPage() {
                                                         )}
                                                     </span>
                                                 </div>
+
+                                                {/* Cancellation reason preview */}
+                                                {isCancelRequested &&
+                                                    order.cancellation
+                                                        ?.reason && (
+                                                        <div className="mt-2 inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-orange-50 border border-orange-100 text-[11px] text-orange-700 max-w-full">
+                                                            <FiAlertTriangle
+                                                                size={11}
+                                                                className="mt-0.5 flex-shrink-0"
+                                                            />
+                                                            <span className="truncate">
+                                                                {
+                                                                    order
+                                                                        .cancellation
+                                                                        .reason
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    )}
                                             </div>
                                         </div>
 

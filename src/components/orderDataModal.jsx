@@ -11,6 +11,9 @@ import {
     FiMapPin,
     FiPackage,
     FiCalendar,
+    FiAlertTriangle,
+    FiCheckCircle,
+    FiXCircle,
 } from "react-icons/fi";
 
 const STATUS_STYLES = {
@@ -18,11 +21,14 @@ const STATUS_STYLES = {
     Processing: "bg-blue-50 text-blue-700",
     Shipped: "bg-violet-50 text-violet-700",
     Delivered: "bg-emerald-50 text-emerald-700",
+    Cancelled: "bg-red-50 text-red-700",
+    "Cancel Requested": "bg-orange-50 text-orange-700",
 };
 
 export default function AdminOrderDataModal({ order, refresh, isAdmin }) {
     const [isOpen, setIsOpen] = useState(false);
     const [updating, setUpdating] = useState(false);
+    const [resolving, setResolving] = useState(false);
 
     function updateOrderStatus(newStatus) {
         const token = localStorage.getItem("token");
@@ -33,20 +39,46 @@ export default function AdminOrderDataModal({ order, refresh, isAdmin }) {
             { status: newStatus },
             { headers: { Authorization: `Bearer ${token}` } }
         )
-            .then((res) => {
+            .then(() => {
                 toast.success("Order status updated");
-                console.log(res.data);
                 refresh();
             })
             .catch((err) => {
                 console.log(err);
-                toast.error("Failed to update order status");
+                toast.error(
+                    err?.response?.data?.message ||
+                        "Failed to update order status"
+                );
             })
             .finally(() => setUpdating(false));
     }
 
-    const statusStyle =
-        STATUS_STYLES[order.status] || STATUS_STYLES.Pending;
+    function resolveCancellation(approve) {
+        const token = localStorage.getItem("token");
+        setResolving(true);
+
+        api.put(
+            `/orders/${order.orderId}/resolve-cancellation`,
+            { approve },
+            { headers: { Authorization: `Bearer ${token}` } }
+        )
+            .then((res) => {
+                toast.success(res.data.message);
+                setIsOpen(false);
+                refresh();
+            })
+            .catch((err) => {
+                toast.error(
+                    err?.response?.data?.message ||
+                        "Failed to resolve cancellation"
+                );
+            })
+            .finally(() => setResolving(false));
+    }
+
+    const statusStyle = STATUS_STYLES[order.status] || STATUS_STYLES.Pending;
+    const isCancelRequested = order.status === "Cancel Requested";
+    const isCancelled = order.status === "Cancelled";
 
     return (
         <>
@@ -89,6 +121,98 @@ export default function AdminOrderDataModal({ order, refresh, isAdmin }) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Cancellation request banner (admin only) */}
+                        {isAdmin && isCancelRequested && (
+                            <div className="px-6 py-4 bg-orange-50 border-b border-orange-100">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                        <FiAlertTriangle
+                                            size={16}
+                                            className="text-orange-600"
+                                        />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-sm font-bold text-orange-800">
+                                            Cancellation Request
+                                        </div>
+                                        <p className="text-xs text-orange-700 mt-1 leading-relaxed">
+                                            <span className="font-semibold">
+                                                Reason:
+                                            </span>{" "}
+                                            {order.cancellation?.reason ||
+                                                "No reason provided"}
+                                        </p>
+                                        {order.cancellation?.requestedAt && (
+                                            <p className="text-[11px] text-orange-600/80 mt-1">
+                                                Requested at{" "}
+                                                {new Date(
+                                                    order.cancellation.requestedAt
+                                                ).toLocaleString()}
+                                            </p>
+                                        )}
+
+                                        <div className="flex gap-2 mt-3">
+                                            <button
+                                                onClick={() =>
+                                                    resolveCancellation(true)
+                                                }
+                                                disabled={resolving}
+                                                className="inline-flex items-center gap-1.5 px-3 h-[34px] rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-60"
+                                            >
+                                                <FiCheckCircle size={13} />
+                                                Approve Cancel
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    resolveCancellation(false)
+                                                }
+                                                disabled={resolving}
+                                                className="inline-flex items-center gap-1.5 px-3 h-[34px] rounded-lg bg-white border border-orange-200 text-orange-700 text-xs font-semibold hover:bg-orange-50 disabled:opacity-60"
+                                            >
+                                                <FiXCircle size={13} />
+                                                Reject Request
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Cancelled info banner */}
+                        {isCancelled && (
+                            <div className="px-6 py-4 bg-red-50 border-b border-red-100">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                                        <FiXCircle
+                                            size={16}
+                                            className="text-red-600"
+                                        />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="text-sm font-bold text-red-800">
+                                            Order Cancelled
+                                        </div>
+                                        {order.cancellation?.reason && (
+                                            <p className="text-xs text-red-700 mt-1">
+                                                <span className="font-semibold">
+                                                    Reason:
+                                                </span>{" "}
+                                                {order.cancellation.reason}
+                                            </p>
+                                        )}
+                                        {order.cancellation?.resolvedAt && (
+                                            <p className="text-[11px] text-red-600/80 mt-1">
+                                                Cancelled at{" "}
+                                                {new Date(
+                                                    order.cancellation.resolvedAt
+                                                ).toLocaleString()}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Body */}
                         <div className="max-h-[70vh] overflow-y-auto">
@@ -178,7 +302,9 @@ export default function AdminOrderDataModal({ order, refresh, isAdmin }) {
                                             <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">
                                                 Status
                                             </div>
-                                            {isAdmin ? (
+                                            {isAdmin &&
+                                            !isCancelRequested &&
+                                            !isCancelled ? (
                                                 <select
                                                     value={order.status}
                                                     onChange={(e) =>

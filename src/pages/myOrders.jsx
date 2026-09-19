@@ -6,13 +6,21 @@ import getFormattedPrice from "../utils/price-formatter";
 import formatTimestamp from "../utils/date-formatter";
 import AdminOrderDataModal from "../components/orderDataModal";
 import toast from "react-hot-toast";
-import { FiPackage, FiShoppingBag, FiClock } from "react-icons/fi";
+import {
+    FiPackage,
+    FiShoppingBag,
+    FiClock,
+    FiXCircle,
+    FiX,
+} from "react-icons/fi";
 
 const STATUS_STYLES = {
     Pending: "bg-amber-50 text-amber-700 border-amber-100",
     Processing: "bg-blue-50 text-blue-700 border-blue-100",
     Shipped: "bg-violet-50 text-violet-700 border-violet-100",
     Delivered: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    Cancelled: "bg-red-50 text-red-700 border-red-100",
+    "Cancel Requested": "bg-orange-50 text-orange-700 border-orange-100",
 };
 
 export default function MyOrders() {
@@ -22,6 +30,11 @@ export default function MyOrders() {
     const [pageSize, setPageSize] = useState(10);
     const [totalOrders, setTotalOrders] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Cancellation modal state
+    const [cancelModal, setCancelModal] = useState(null);
+    const [cancelReason, setCancelReason] = useState("");
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         if (loading) {
@@ -55,6 +68,40 @@ export default function MyOrders() {
                 });
         }
     }, [loading, pageNumber, pageSize]);
+
+    function handleCancelOrder(order) {
+        setCancelModal(order);
+        setCancelReason("");
+    }
+
+    async function submitCancellation() {
+        if (!cancelReason.trim() || cancelReason.trim().length < 5) {
+            toast.error("Please provide a reason (min 5 characters)");
+            return;
+        }
+
+        try {
+            setCancelling(true);
+            const token = localStorage.getItem("token");
+
+            const res = await api.put(
+                `/orders/${cancelModal.orderId}/cancel`,
+                { reason: cancelReason.trim() },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            toast.success(res.data.message);
+            setCancelModal(null);
+            setCancelReason("");
+            setLoading(true); // refresh
+        } catch (err) {
+            toast.error(
+                err?.response?.data?.message || "Failed to cancel order"
+            );
+        } finally {
+            setCancelling(false);
+        }
+    }
 
     return (
         <div className="w-full min-h-full bg-primary pb-24 lg:pb-12">
@@ -119,6 +166,9 @@ export default function MyOrders() {
                             const statusStyle =
                                 STATUS_STYLES[order.status] ||
                                 STATUS_STYLES.Pending;
+                            const canCancel =
+                                order.status === "Pending" ||
+                                order.status === "Processing";
 
                             return (
                                 <div
@@ -138,16 +188,12 @@ export default function MyOrders() {
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-3 flex-wrap">
                                                         <span className="font-bold text-accent text-sm">
-                                                            {
-                                                                order.orderId
-                                                            }
+                                                            {order.orderId}
                                                         </span>
                                                         <span
                                                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${statusStyle}`}
                                                         >
-                                                            {
-                                                                order.status
-                                                            }
+                                                            {order.status}
                                                         </span>
                                                     </div>
                                                     <h3 className="font-semibold text-gray-800 text-sm mt-1 truncate">
@@ -171,7 +217,7 @@ export default function MyOrders() {
                                             </div>
 
                                             {/* Right: Total + actions */}
-                                            <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-6 pl-16 lg:pl-0">
+                                            <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-6 pl-16 lg:pl-0 flex-wrap">
                                                 <div className="text-right">
                                                     <div className="text-[10px] text-gray-400 uppercase tracking-wide">
                                                         Total
@@ -182,13 +228,33 @@ export default function MyOrders() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <AdminOrderDataModal
-                                                    isAdmin={false}
-                                                    order={order}
-                                                    refresh={() =>
-                                                        setLoading(true)
-                                                    }
-                                                />
+
+                                                <div className="flex items-center gap-2">
+                                                    {/* Cancel button */}
+                                                    {canCancel && (
+                                                        <button
+                                                            onClick={() =>
+                                                                handleCancelOrder(
+                                                                    order
+                                                                )
+                                                            }
+                                                            className="px-4 h-[42px] rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors inline-flex items-center gap-2"
+                                                        >
+                                                            <FiXCircle
+                                                                size={14}
+                                                            />
+                                                            Cancel Order
+                                                        </button>
+                                                    )}
+
+                                                    <AdminOrderDataModal
+                                                        isAdmin={false}
+                                                        order={order}
+                                                        refresh={() =>
+                                                            setLoading(true)
+                                                        }
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -243,6 +309,88 @@ export default function MyOrders() {
                     </div>
                 )}
             </div>
+
+            {/* ===== CANCEL MODAL ===== */}
+            {cancelModal && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => !cancelling && setCancelModal(null)}
+                >
+                    <div
+                        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="relative bg-gradient-to-br from-red-500 to-red-700 px-6 py-5 text-white">
+                            <button
+                                onClick={() =>
+                                    !cancelling && setCancelModal(null)
+                                }
+                                disabled={cancelling}
+                                className="absolute right-4 top-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors disabled:opacity-50"
+                            >
+                                <FiX size={18} />
+                            </button>
+                            <h2 className="text-lg font-bold">
+                                Cancel Order
+                            </h2>
+                            <p className="text-white/70 text-xs mt-1">
+                                Order {cancelModal.orderId}
+                            </p>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="p-3 rounded-lg bg-amber-50 border border-amber-100 text-xs text-amber-700 mb-4">
+                                {cancelModal.status === "Pending"
+                                    ? "This order will be cancelled immediately and stock will be restored."
+                                    : "Your request will be reviewed by an admin before the order is cancelled."}
+                            </div>
+
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Reason for cancellation{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                value={cancelReason}
+                                onChange={(e) =>
+                                    setCancelReason(
+                                        e.target.value.slice(0, 500)
+                                    )
+                                }
+                                rows={4}
+                                placeholder="Please tell us why you're cancelling this order..."
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none resize-none"
+                            ></textarea>
+                            <div className="text-xs text-gray-400 text-right mt-1">
+                                {cancelReason.length}/500
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                            <button
+                                onClick={() => setCancelModal(null)}
+                                disabled={cancelling}
+                                className="flex-1 h-[46px] rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-white disabled:opacity-50"
+                            >
+                                Keep Order
+                            </button>
+                            <button
+                                onClick={submitCancellation}
+                                disabled={cancelling}
+                                className="flex-1 h-[46px] rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+                            >
+                                {cancelling ? (
+                                    <>
+                                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                                        Cancelling...
+                                    </>
+                                ) : (
+                                    "Confirm Cancel"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
